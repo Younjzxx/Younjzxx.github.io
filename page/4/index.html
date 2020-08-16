@@ -14,12 +14,10 @@
 
 
 <link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
-  
-  <link rel="stylesheet" href="/lib/animate-css/animate.min.css">
 
-<script class="hexo-configurations">
+<script id="hexo-configurations">
     var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"jiazx.top","root":"/","scheme":"Muse","version":"8.0.0-rc.5","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false};
+    var CONFIG = {"hostname":"jiazx.top","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
   <meta name="description" content="Try Everything......">
@@ -35,7 +33,7 @@
 <link rel="canonical" href="http://jiazx.top/page/4/">
 
 
-<script class="page-configurations">
+<script id="page-configurations">
   // https://hexo.io/docs/variables.html
   CONFIG.page = {
     sidebar: "",
@@ -55,36 +53,24 @@
 
   <noscript>
   <style>
-  body { margin-top: 2rem; }
-
+  .use-motion .brand,
   .use-motion .menu-item,
-  .use-motion .sidebar,
+  .sidebar-inner,
   .use-motion .post-block,
   .use-motion .pagination,
   .use-motion .comments,
   .use-motion .post-header,
   .use-motion .post-body,
-  .use-motion .collection-header {
-    visibility: visible;
-  }
-
-  .use-motion .header,
-  .use-motion .site-brand-container .toggle,
-  .use-motion .footer { opacity: initial; }
+  .use-motion .collection-header { opacity: initial; }
 
   .use-motion .site-title,
-  .use-motion .site-subtitle,
-  .use-motion .custom-logo-image {
+  .use-motion .site-subtitle {
     opacity: initial;
     top: initial;
   }
 
-  .use-motion .logo-line {
-    transform: scaleX(1);
-  }
-
-  .search-pop-overlay, .sidebar-nav { display: none; }
-  .sidebar-panel { display: block; }
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
   </style>
 </noscript>
 
@@ -94,20 +80,22 @@
   <div class="container use-motion">
     <div class="headband"></div>
 
-    <main class="main">
-      <header class="header" itemscope itemtype="http://schema.org/WPHeader">
-        <div class="header-inner"><div class="site-brand-container">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
   <div class="site-nav-toggle">
     <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
     </div>
   </div>
 
   <div class="site-meta">
 
     <a href="/" class="brand" rel="start">
-      <i class="logo-line"></i>
+      <span class="logo-line-before"><i></i></span>
       <h1 class="site-title">J Blog</h1>
-      <i class="logo-line"></i>
+      <span class="logo-line-after"><i></i></span>
     </a>
   </div>
 
@@ -120,81 +108,41 @@
 
 
 
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
 
 
 
 </div>
-          
-  
-  <div class="toggle sidebar-toggle">
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-  </div>
+    </header>
 
-  <aside class="sidebar">
-
-    <div class="sidebar-inner sidebar-overview-active">
-      <ul class="sidebar-nav">
-        <li class="sidebar-nav-toc">
-          文章目录
-        </li>
-        <li class="sidebar-nav-overview">
-          站点概览
-        </li>
-      </ul>
-
-      <!--noindex-->
-      <section class="post-toc-wrap sidebar-panel">
-      </section>
-      <!--/noindex-->
-
-      <section class="site-overview-wrap sidebar-panel">
-        <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
-  <p class="site-author-name" itemprop="name">Stephen Jia</p>
-  <div class="site-description" itemprop="description">Try Everything......</div>
-</div>
-<div class="site-state-wrap animated">
-  <nav class="site-state">
-      <div class="site-state-item site-state-posts">
-          <a href="/archives">
-          <span class="site-state-item-count">41</span>
-          <span class="site-state-item-name">日志</span>
-        </a>
-      </div>
-      <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">9</span>
-        <span class="site-state-item-name">标签</span>
-      </div>
-  </nav>
-</div>
-
-
-
-      </section>
-    </div>
-  </aside>
-  <div id="sidebar-dimmer"></div>
-
-
-      </header>
-
-      
+    
   <div class="back-to-top">
     <i class="fa fa-arrow-up"></i>
     <span>0%</span>
   </div>
 
-<noscript>
-  <div id="noscript-warning">Theme NexT works best with JavaScript enabled</div>
-</noscript>
 
-
+    <main class="main">
       <div class="main-inner">
-        
-
-        <div class="content index posts-expand">
+        <div class="content-wrap">
           
+
+          <div class="content index posts-expand">
+            
       
   
   
@@ -210,8 +158,6 @@
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
       <meta itemprop="name" content="J Blog">
     </span>
-
-    
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
@@ -238,6 +184,8 @@
     
     
     <div class="post-body" itemprop="articleBody">
+
+      
           <h1 id="思路一：自定义注解-spring-intercepter方式"><a href="#思路一：自定义注解-spring-intercepter方式" class="headerlink" title="思路一：自定义注解+spring intercepter方式"></a>思路一：自定义注解+spring intercepter方式</h1><h2 id="1-定义一个Permission注解"><a href="#1-定义一个Permission注解" class="headerlink" title="1.定义一个Permission注解"></a>1.定义一个Permission注解</h2><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Target(&#123;ElementType.TYPE, ElementType.METHOD&#125;)</span></span><br><span class="line"><span class="meta">@Retention(RetentionPolicy.RUNTIME)</span></span><br><span class="line"><span class="keyword">public</span> <span class="meta">@interface</span> Permission &#123;</span><br><span class="line">    <span class="function">String <span class="title">value</span><span class="params">()</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>这个注解一般会打到controller层的api方法上面。value代表了这个api需要的权限，也可以设计成Integer类型的代表需要的权限level，whatever，这个地方可以根据需要自己设计。</p>
 <h2 id="2-编写intercepter"><a href="#2-编写intercepter" class="headerlink" title="2.编写intercepter"></a>2.编写intercepter</h2><p>eg:</p>
@@ -275,8 +223,6 @@
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
       <meta itemprop="name" content="J Blog">
     </span>
-
-    
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
@@ -303,6 +249,8 @@
     
     
     <div class="post-body" itemprop="articleBody">
+
+      
           <p>因为应用程序服务器有两台，所以如果仅仅在每台机器上面同步时不够的，因为获取到的不是同一把锁。</p>
 <p>这里使用redis实现分布式锁</p>
 <h1 id="注意事项"><a href="#注意事项" class="headerlink" title="注意事项"></a>注意事项</h1><p>使用redis作为分布式锁要注意几点：</p>
@@ -344,8 +292,6 @@
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
       <meta itemprop="name" content="J Blog">
     </span>
-
-    
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
@@ -372,6 +318,8 @@
     
     
     <div class="post-body" itemprop="articleBody">
+
+      
           <h1 id="一、nginx为什么高性能"><a href="#一、nginx为什么高性能" class="headerlink" title="一、nginx为什么高性能"></a>一、nginx为什么高性能</h1><h2 id="epoll多路复用"><a href="#epoll多路复用" class="headerlink" title="epoll多路复用"></a>epoll多路复用</h2><p>1.传统模型：基于缓冲区的传输<br>首先，假设这里有两台主机进行通信<br>client —– server<br>当client要向server传输数据的时候:数据不会直截了当地发到server处，而是先进行一个socket.write操作，并将要发送的数据包放到<strong>缓冲区</strong>中。<br>如果有一个数据包要发送，这时候缓冲器被占满了，那么tcp/ip会先将缓冲区里面的数据全部传输完成，才能让新的数据包进入缓冲区，然后再进入服务器。这样的操作效率不够高</p>
 <p>2.linux select模型：变更触发轮询查找<br>select多路复用是server阻塞自己的同时监听多个客户端的连接，一旦有连接发生变化，那么就唤醒自己，循环遍历100个连接，找到发生变化的一个或者多个，执行read操作。缺陷：遍历的效率很低，并且有1024的数量上限</p>
 <p>3.epoll多路复用模型：根据回调函数唤醒自己<br>同样，server阻塞自己同时监听多个客户端的连接。并且设置回调函数。若发生变化直接唤醒自己执行回调函数。</p>
@@ -429,8 +377,6 @@
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
       <meta itemprop="name" content="J Blog">
     </span>
-
-    
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
@@ -457,6 +403,8 @@
     
     
     <div class="post-body" itemprop="articleBody">
+
+      
           <h1 id="一、商品详情页面缓存"><a href="#一、商品详情页面缓存" class="headerlink" title="一、商品详情页面缓存"></a>一、商品详情页面缓存</h1><p>商品详情页面存入redis缓存中<br>获取商品详情controller接口方法更改</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//根据商品详情页的id到redis内获取,实现这个功能需要序列化itembo以及itembo内部聚合的killbo</span></span><br><span class="line">            itemBO = (ItemBO) redisTemplate.opsForValue().get(<span class="string">&quot;item_&quot;</span> + id);</span><br><span class="line"></span><br><span class="line">            <span class="comment">//若redis内不存在对应的itembo，则访问下游的service,去数据库取</span></span><br><span class="line">            <span class="keyword">if</span>(itemBO == <span class="keyword">null</span>)&#123;</span><br><span class="line">            <span class="comment">//只进一次service获取mysql数据库数据</span></span><br><span class="line">                itemBO = itemService.getItemById(id);</span><br><span class="line">                <span class="comment">//存到redis，并且存到redis内，设置上过期时间10分钟，第二次刷新之后的十分钟都从redis获取</span></span><br><span class="line">                redisTemplate.opsForValue().set(<span class="string">&quot;item_&quot;</span>+id, itemBO);</span><br><span class="line">                redisTemplate.expire(<span class="string">&quot;item_&quot;</span>+id, <span class="number">10</span>, TimeUnit.MINUTES);</span><br><span class="line">            &#125;</span><br></pre></td></tr></table></figure>
 
@@ -510,8 +458,6 @@
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
       <meta itemprop="name" content="J Blog">
     </span>
-
-    
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
@@ -538,6 +484,8 @@
     
     
     <div class="post-body" itemprop="articleBody">
+
+      
           <h1 id="项目添加redis的session依赖"><a href="#项目添加redis的session依赖" class="headerlink" title="项目添加redis的session依赖"></a>项目添加redis的session依赖</h1><p>将分布式session存储在redis内：<br>打开项目的pom.xml，导入springboot对reids的依赖</p>
 <figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&lt;dependency&gt;</span><br><span class="line">  &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;</span><br><span class="line">  &lt;artifactId&gt;spring-boot-starter-data-redis&lt;/artifactId&gt;</span><br><span class="line">&lt;/dependency&gt;</span><br><span class="line">&lt;dependency&gt;</span><br><span class="line">  &lt;groupId&gt;org.springframework.session&lt;/groupId&gt;</span><br><span class="line">  &lt;artifactId&gt;spring-session-data-redis&lt;/artifactId&gt;</span><br><span class="line">&lt;/dependency&gt;</span><br></pre></td></tr></table></figure>
 <p>添加如下依赖之后，可以增加一个配置类配置session存活时间：</p>
@@ -608,8 +556,6 @@
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
       <meta itemprop="name" content="J Blog">
     </span>
-
-    
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
@@ -636,6 +582,8 @@
     
     
     <div class="post-body" itemprop="articleBody">
+
+      
           <p>首先我们需要思考上一个章节并发上不去的原因。发现在并发环境下mysql数据库的压力始终很大，一台服务器上面不仅仅要跑java的jar包程序，还要承受高并发访问数据库的压力。这样的压力都在同一台服务器上显然存在缺陷。所以我们可以购买多台服务器。</p>
 <p>一台专门用来部署项目的数据库。<br>两台或多台用来部署项目jar包。<br>一台用来配置部署nginx反向代理。</p>
 <p>首先这里购买4台服务器，两台跑java，一台部署数据库，一台部署nginx。</p>
@@ -702,8 +650,6 @@
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
       <meta itemprop="name" content="J Blog">
     </span>
-
-    
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
@@ -730,6 +676,8 @@
     
     
     <div class="post-body" itemprop="articleBody">
+
+      
           <h1 id="下载并启动jemeter"><a href="#下载并启动jemeter" class="headerlink" title="下载并启动jemeter"></a>下载并启动jemeter</h1><p>下载好jemeter5并解压之后，可以先打开jemeter目录下的bin\jmeter.properties文件设置语言：在#language=en下面新加一行添加：<strong>language=zh_CN</strong> 设置显示中文。然后直接运行jemeter.bat可以直接在windows端打开压测工具。</p>
 <h1 id="jemeter压测配置"><a href="#jemeter压测配置" class="headerlink" title="jemeter压测配置"></a>jemeter压测配置</h1><p>jemeter压测主要需要以下配置：</p>
 <ul>
@@ -795,8 +743,6 @@
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
       <meta itemprop="name" content="J Blog">
     </span>
-
-    
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
@@ -823,6 +769,8 @@
     
     
     <div class="post-body" itemprop="articleBody">
+
+      
           <h1 id="maven打包："><a href="#maven打包：" class="headerlink" title="maven打包："></a>maven打包：</h1><p>进入项目根目录：<br>踩坑1：<br><strong>mvn clean package</strong>，运行target中的jar包<br>java -jar seckill_boot-1.0-SNAPSHOT.jar 报错：<br>jar包中没有主清单属性。<br>原因是这种方式打包的jar没有入口main，也没有各种依赖jar包。<br>需要在pom.xml中导入</p>
 <figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">&lt;plugin&gt;</span><br><span class="line">     &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;</span><br><span class="line">     &lt;artifactId&gt;maven-compiler-plugin&lt;/artifactId&gt;</span><br><span class="line">     &lt;configuration&gt;</span><br><span class="line">       &lt;source&gt;1.8&lt;/source&gt;</span><br><span class="line">       &lt;target&gt;1.8&lt;/target&gt;</span><br><span class="line">     &lt;/configuration&gt;</span><br><span class="line">   &lt;/plugin&gt;</span><br><span class="line">   &lt;plugin&gt;</span><br><span class="line">     &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;</span><br><span class="line">     &lt;artifactId&gt;spring-boot-maven-plugin&lt;/artifactId&gt;</span><br><span class="line">   &lt;/plugin&gt;</span><br></pre></td></tr></table></figure>
 
@@ -864,8 +812,6 @@
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
       <meta itemprop="name" content="J Blog">
     </span>
-
-    
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
@@ -892,6 +838,8 @@
     
     
     <div class="post-body" itemprop="articleBody">
+
+      
           <p>作为小白一步一步傻瓜式搭建自己的服务器，慢慢来，不着急…….</p>
 <h1 id="购买服务器"><a href="#购买服务器" class="headerlink" title="购买服务器"></a>购买服务器</h1><p>首先购买阿里云ECS服务器。根据需求购买，最近因为疫情阿里云还有学生活动，学生党学习课程答题可以免费领，这里我购买的是CentOS的系统。</p>
 <h1 id="配置服务器"><a href="#配置服务器" class="headerlink" title="配置服务器"></a>配置服务器</h1><p>1.购买服务器之后，会自动创建实例，如果没有的话看看左上角的区域有没有选错。<br>2.系统创建好实例之后，最好重新设置实例密码和远程连接密码。<br>3.重设密码之后，在网络与安全-安全组-配置规则处添加安全组规则，将自己的ip添加到授权对象中。<br>端口范围：若通过Linux系统连接，则设置为22/22，若通过windows连接，则设置为3389/3389，其他默认即可。</p>
@@ -951,8 +899,6 @@
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
       <meta itemprop="name" content="J Blog">
     </span>
-
-    
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
@@ -979,6 +925,8 @@
     
     
     <div class="post-body" itemprop="articleBody">
+
+      
           <h1 id="应用springboot2，mybaits3开发的前后端分离基础商城项目"><a href="#应用springboot2，mybaits3开发的前后端分离基础商城项目" class="headerlink" title="应用springboot2，mybaits3开发的前后端分离基础商城项目"></a>应用springboot2，mybaits3开发的前后端分离基础商城项目</h1><ul>
 <li><p>tips：项目我<strong>已经部署到了云端服务器，欢迎给本菜鸡提供宝贵意见~</strong></p>
 </li>
@@ -1099,8 +1047,8 @@
 
 
 
-        </div>
-        
+          </div>
+          
 
 <script>
   window.addEventListener('tabs:register', () => {
@@ -1124,6 +1072,62 @@
   }
 </script>
 
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Stephen Jia</p>
+  <div class="site-description" itemprop="description">Try Everything......</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">41</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
       </div>
     </main>
 
@@ -1142,7 +1146,7 @@
   </span>
   <span class="author" itemprop="copyrightHolder">Stephen Jia</span>
 </div>
-  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
   </div>
 
         
@@ -1160,6 +1164,8 @@
 
   
   <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
 
 <script src="/js/utils.js"></script>
 
@@ -1170,6 +1176,8 @@
 
 
 <script src="/js/next-boot.js"></script>
+
+
 
 
   

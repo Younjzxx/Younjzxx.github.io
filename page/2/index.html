@@ -14,12 +14,10 @@
 
 
 <link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
-  
-  <link rel="stylesheet" href="/lib/animate-css/animate.min.css">
 
-<script class="hexo-configurations">
+<script id="hexo-configurations">
     var NexT = window.NexT || {};
-    var CONFIG = {"hostname":"jiazx.top","root":"/","scheme":"Muse","version":"8.0.0-rc.5","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false};
+    var CONFIG = {"hostname":"jiazx.top","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
   <meta name="description" content="Try Everything......">
@@ -35,7 +33,7 @@
 <link rel="canonical" href="http://jiazx.top/page/2/">
 
 
-<script class="page-configurations">
+<script id="page-configurations">
   // https://hexo.io/docs/variables.html
   CONFIG.page = {
     sidebar: "",
@@ -55,36 +53,24 @@
 
   <noscript>
   <style>
-  body { margin-top: 2rem; }
-
+  .use-motion .brand,
   .use-motion .menu-item,
-  .use-motion .sidebar,
+  .sidebar-inner,
   .use-motion .post-block,
   .use-motion .pagination,
   .use-motion .comments,
   .use-motion .post-header,
   .use-motion .post-body,
-  .use-motion .collection-header {
-    visibility: visible;
-  }
-
-  .use-motion .header,
-  .use-motion .site-brand-container .toggle,
-  .use-motion .footer { opacity: initial; }
+  .use-motion .collection-header { opacity: initial; }
 
   .use-motion .site-title,
-  .use-motion .site-subtitle,
-  .use-motion .custom-logo-image {
+  .use-motion .site-subtitle {
     opacity: initial;
     top: initial;
   }
 
-  .use-motion .logo-line {
-    transform: scaleX(1);
-  }
-
-  .search-pop-overlay, .sidebar-nav { display: none; }
-  .sidebar-panel { display: block; }
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
   </style>
 </noscript>
 
@@ -94,20 +80,22 @@
   <div class="container use-motion">
     <div class="headband"></div>
 
-    <main class="main">
-      <header class="header" itemscope itemtype="http://schema.org/WPHeader">
-        <div class="header-inner"><div class="site-brand-container">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
   <div class="site-nav-toggle">
     <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
     </div>
   </div>
 
   <div class="site-meta">
 
     <a href="/" class="brand" rel="start">
-      <i class="logo-line"></i>
+      <span class="logo-line-before"><i></i></span>
       <h1 class="site-title">J Blog</h1>
-      <i class="logo-line"></i>
+      <span class="logo-line-after"><i></i></span>
     </a>
   </div>
 
@@ -120,81 +108,41 @@
 
 
 
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
 
 
 
 </div>
-          
-  
-  <div class="toggle sidebar-toggle">
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-    <span class="toggle-line"></span>
-  </div>
+    </header>
 
-  <aside class="sidebar">
-
-    <div class="sidebar-inner sidebar-overview-active">
-      <ul class="sidebar-nav">
-        <li class="sidebar-nav-toc">
-          文章目录
-        </li>
-        <li class="sidebar-nav-overview">
-          站点概览
-        </li>
-      </ul>
-
-      <!--noindex-->
-      <section class="post-toc-wrap sidebar-panel">
-      </section>
-      <!--/noindex-->
-
-      <section class="site-overview-wrap sidebar-panel">
-        <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
-  <p class="site-author-name" itemprop="name">Stephen Jia</p>
-  <div class="site-description" itemprop="description">Try Everything......</div>
-</div>
-<div class="site-state-wrap animated">
-  <nav class="site-state">
-      <div class="site-state-item site-state-posts">
-          <a href="/archives">
-          <span class="site-state-item-count">41</span>
-          <span class="site-state-item-name">日志</span>
-        </a>
-      </div>
-      <div class="site-state-item site-state-tags">
-        <span class="site-state-item-count">9</span>
-        <span class="site-state-item-name">标签</span>
-      </div>
-  </nav>
-</div>
-
-
-
-      </section>
-    </div>
-  </aside>
-  <div id="sidebar-dimmer"></div>
-
-
-      </header>
-
-      
+    
   <div class="back-to-top">
     <i class="fa fa-arrow-up"></i>
     <span>0%</span>
   </div>
 
-<noscript>
-  <div id="noscript-warning">Theme NexT works best with JavaScript enabled</div>
-</noscript>
 
-
+    <main class="main">
       <div class="main-inner">
-        
-
-        <div class="content index posts-expand">
+        <div class="content-wrap">
           
+
+          <div class="content index posts-expand">
+            
       
   
   
@@ -210,8 +158,6 @@
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
       <meta itemprop="name" content="J Blog">
     </span>
-
-    
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
@@ -238,6 +184,8 @@
     
     
     <div class="post-body" itemprop="articleBody">
+
+      
           <p>二者均为限制语句<br>where语句先执行(返回结果之前，为约束声明)，having语句后执行(返回结果之后过滤，为过滤声明)。<br>having中可以使用聚合函数</p>
 
       
@@ -269,8 +217,6 @@
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
       <meta itemprop="name" content="J Blog">
     </span>
-
-    
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
@@ -297,6 +243,8 @@
     
     
     <div class="post-body" itemprop="articleBody">
+
+      
           <h1 id="Sonar处发现的需要注意的代码细节："><a href="#Sonar处发现的需要注意的代码细节：" class="headerlink" title="Sonar处发现的需要注意的代码细节："></a>Sonar处发现的需要注意的代码细节：</h1><p>1.如果父类已经有了equals方法，子类最好不要重写equals方法，这样容易让instance of方法判断错误。有时候使用lombok的时候在父类和子类上面习惯性的使用@Data容易造成此错误。</p>
 <p>2.不要使用new Date().getTime()，使用System.currentTimeMillis()，前者底层直接调用了后者，后者是native方法，效率高，前者还需要建立Date对象。</p>
 
@@ -329,8 +277,6 @@
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
       <meta itemprop="name" content="J Blog">
     </span>
-
-    
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
@@ -357,6 +303,8 @@
     
     
     <div class="post-body" itemprop="articleBody">
+
+      
           <h1 id="解决："><a href="#解决：" class="headerlink" title="解决："></a>解决：</h1><p>不能解析哪个plugin就去对应的plugin的maven本地仓库去查看对应的文件夹，如果查看到文件夹内不是这样的一些正常的文件。<br>是<strong>lastUploaded</strong>后缀的一些文件，那就把这些文件都删除掉，重新Reimport一下。</p>
 
       
@@ -388,8 +336,6 @@
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
       <meta itemprop="name" content="J Blog">
     </span>
-
-    
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
@@ -416,6 +362,8 @@
     
     
     <div class="post-body" itemprop="articleBody">
+
+      
           <h1 id="第一个问题：MYSQL的视图是什么？"><a href="#第一个问题：MYSQL的视图是什么？" class="headerlink" title="第一个问题：MYSQL的视图是什么？"></a>第一个问题：MYSQL的视图是什么？</h1><h2 id="视图的概念"><a href="#视图的概念" class="headerlink" title="视图的概念"></a>视图的概念</h2><p>视图的本质其实就是一个虚拟的表。<strong>是由查询操作定义的虚拟表</strong>，它并不在数据库中实际存储，在用这个视图的时候它实时生成。</p>
 <h2 id="视图的作用"><a href="#视图的作用" class="headerlink" title="视图的作用"></a>视图的作用</h2><p>1.提高了频繁查询表里面某些字段的简便性。<br>例子：有三个表<br>user : id, name, age<br>product: id, price<br>中间关系表mid: id, user_id, product_id<br>比如user表里面经常去查询name,和product的name。那么就可以去<strong>创建视图</strong>：<br>create view test as select u.name as uname, p.name as pname from user as u, product as p, mid as m where u.id = m.user_id and p.id = m.product_id;</p>
 <p>使用的时候，直接<br>select * from test;<br>即可查询出视图。</p>
@@ -456,8 +404,6 @@
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
       <meta itemprop="name" content="J Blog">
     </span>
-
-    
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
@@ -484,6 +430,8 @@
     
     
     <div class="post-body" itemprop="articleBody">
+
+      
           <h1 id="什么样的对象被回收，什么样的对象不被回收？"><a href="#什么样的对象被回收，什么样的对象不被回收？" class="headerlink" title="什么样的对象被回收，什么样的对象不被回收？"></a>什么样的对象被回收，什么样的对象不被回收？</h1><h2 id="基本可以忽略的一种方法：引用计数法："><a href="#基本可以忽略的一种方法：引用计数法：" class="headerlink" title="基本可以忽略的一种方法：引用计数法："></a>基本可以忽略的一种方法：引用计数法：</h2><p>就是计算这个对象被引用的次数，如果这个次数不为0，那么就不回收这个对象。</p>
 <p>方法的缺陷：无法解决对象间相互引用的问题。</p>
 <h2 id="目前主流的虚拟机采用的方法：根据GC-ROOT进行垃圾收集："><a href="#目前主流的虚拟机采用的方法：根据GC-ROOT进行垃圾收集：" class="headerlink" title="目前主流的虚拟机采用的方法：根据GC ROOT进行垃圾收集："></a>目前主流的虚拟机采用的方法：根据GC ROOT进行垃圾收集：</h2><h3 id="怎样根据GC-ROOT进行收集？"><a href="#怎样根据GC-ROOT进行收集？" class="headerlink" title="怎样根据GC ROOT进行收集？"></a>怎样根据GC ROOT进行收集？</h3><p>将GC ROOT作为起点，向下进行搜索。所有搜索不到的对象将会被回收。<br>从宏观来看，所有的GC ROOT被放到一个GC ROOT SET里面。从这个set中的所有对象开始向下扫描有引用关系的对象，没有和这个GC ROOT的树形成任何引用关系的对象将会被回收。<br><img src="http://www.jiazx.top/upload/2020/04/image-9a62fb0c27564134b838f8e22e7e5a69.png" alt="image.png"></p>
@@ -523,8 +471,6 @@
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
       <meta itemprop="name" content="J Blog">
     </span>
-
-    
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
@@ -551,6 +497,8 @@
     
     
     <div class="post-body" itemprop="articleBody">
+
+      
           <h1 id="为什么不是两次"><a href="#为什么不是两次" class="headerlink" title="为什么不是两次"></a>为什么不是两次</h1><p>根本问题就在于：客户端发送了一个请求，因为网络拥堵或者其他原因没有传过去，客户端一直收不到确认。超时重传，并且成功建立连接。此时没有传过去的请求又恢复了发送，服务器认为这是一个正常的新的请求。接受并且发送确认給客户端，但是对于客户端，他真正想要的连接已经建立了，此时再次接受到这个请求他想发送拒绝的请求给服务端，但遗憾的是这时候只有两次握手。不能发送。这个连接就一直占用网络资源，被服务端不断的发送，并滞留。<br><strong>讲白话就是至少有三次握手，才能确认双方都能正常收发请求。</strong></p>
 <p><strong>第一次握手：表示客户端有发送请求的能力<br>第二次握手：表示服务端有接收请求和发送请求的能力<br>第三次握手：表示客户端有接收请求的能力</strong></p>
 <p>两次：不知道客户端有没有接收请求的能力，服务端可能一直发送，得不到客户端的确认。</p>
@@ -585,8 +533,6 @@
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
       <meta itemprop="name" content="J Blog">
     </span>
-
-    
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
@@ -613,6 +559,8 @@
     
     
     <div class="post-body" itemprop="articleBody">
+
+      
           <h1 id="HashMap的存储方式"><a href="#HashMap的存储方式" class="headerlink" title="HashMap的存储方式"></a>HashMap的存储方式</h1><p>一般情况下，HashMap是以数组加链表的形式存储的，和数据结构中的散列表的概念基本相同。</p>
 <p>在java的HashMap中，每一对key-value键值对被看做一对Entry.</p>
 <p>java会根据entry中的key计算hash值。根据这个hash值计算出哈希表中要存储的哈希桶中，如果计算出不同key的哈希值相同，那么此时就产生了哈希碰撞（哈希冲突）那么在同一哈希桶中以链表形式存储这两个entry。不同的jdk版本存储的方式不同，jdk7中是头插法，即在距离数组近的一端插入新来的元素。jdk8在远离数组一端插入新来的元素。</p>
@@ -696,8 +644,6 @@
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
       <meta itemprop="name" content="J Blog">
     </span>
-
-    
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
@@ -724,6 +670,8 @@
     
     
     <div class="post-body" itemprop="articleBody">
+
+      
           <h1 id="公平锁和非公平锁："><a href="#公平锁和非公平锁：" class="headerlink" title="公平锁和非公平锁："></a>公平锁和非公平锁：</h1><p>所谓公平锁就是各个线程争抢锁的时候要<strong>按照申请锁的顺序来</strong>，不能随意加塞，类似排队打饭 先来后到。</p>
 <p>非公平锁则相反，谁先抢到锁，谁就先执行，没有抢到，才按照申请锁的顺序来执行。有可能后申请的线程比先申请的线程优先获取到锁,在高并发的情况下,有可能造成优先级反转或者饥饿现象。</p>
 <p>公平锁/非公平锁的创建：<br>  并发包ReentrantLock的创建可以指定构造函数的boolean类型来得到公平锁或者非公平锁 默认是非公平锁。<br>  如：</p>
@@ -804,8 +752,6 @@ public void MyUnLock()&#123;
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
       <meta itemprop="name" content="J Blog">
     </span>
-
-    
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
@@ -832,6 +778,8 @@ public void MyUnLock()&#123;
     
     
     <div class="post-body" itemprop="articleBody">
+
+      
           <h1 id="CAS概念："><a href="#CAS概念：" class="headerlink" title="CAS概念："></a>CAS概念：</h1><p>之前复习volatile关键字的时候，指出volatile不保证原子性。但是使用Atomic包内的类可以保证其原子性。<br>CAS: <strong>Compare And Swap 比较并交换</strong>，即<strong>java.util.concurrent.atomic下的AtomicXxxx类</strong>里面定义的各种比较并交换方法。</p>
 <p>CAS的全称为Compare-And-Swap ,它是一条<strong>CPU并发原语</strong>.<br>它的功能是判断内存某个位置的值是否为预期值,如果是则更新为新的值,这个过程是原子的.</p>
 <p>CAS并发原语提现在Java语言中就是sun.miscUnSaffe类中的各个方法.调用UnSafe类中的CAS方法,JVM会帮我实现CAS汇编指令.这是一种完全依赖于硬件 功能,通过它实现了原子操作,再次强调,由于CAS是一种系统原语,原语属于操作系统用于范畴,是由若干条指令组成,用于完成某个功能的一个过程,并且原语的执行必须是连续的,在执行过程中不允许中断,也即是说CAS是一条原子指令,不会造成所谓的数据不一致的问题.</p>
@@ -903,8 +851,6 @@ public void MyUnLock()&#123;
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
       <meta itemprop="name" content="J Blog">
     </span>
-
-    
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
@@ -931,6 +877,8 @@ public void MyUnLock()&#123;
     
     
     <div class="post-body" itemprop="articleBody">
+
+      
           <p>说到volatile关键字，第一反应就是三点：</p>
 <ul>
 <li>保证可见性</li>
@@ -992,8 +940,8 @@ public void MyUnLock()&#123;
 
 
 
-        </div>
-        
+          </div>
+          
 
 <script>
   window.addEventListener('tabs:register', () => {
@@ -1017,6 +965,62 @@ public void MyUnLock()&#123;
   }
 </script>
 
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Stephen Jia</p>
+  <div class="site-description" itemprop="description">Try Everything......</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">41</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
       </div>
     </main>
 
@@ -1035,7 +1039,7 @@ public void MyUnLock()&#123;
   </span>
   <span class="author" itemprop="copyrightHolder">Stephen Jia</span>
 </div>
-  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
   </div>
 
         
@@ -1053,6 +1057,8 @@ public void MyUnLock()&#123;
 
   
   <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
 
 <script src="/js/utils.js"></script>
 
@@ -1063,6 +1069,8 @@ public void MyUnLock()&#123;
 
 
 <script src="/js/next-boot.js"></script>
+
+
 
 
   
