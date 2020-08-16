@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-Hans">
+<html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
@@ -26,7 +26,7 @@
 <meta property="og:url" content="http://jiazx.top/2020/08/16/juc-1/index.html">
 <meta property="og:site_name" content="J Blog">
 <meta property="og:description" content="高内聚，低耦合所谓高内聚，低耦合就是每个程序要实现的特定功能要尽量多的在自己的内部完成，对外部提供很少量的接口以便调用。 并行和并发并行即多个任务在自己的分配的各自的资源上执行，即多个任务同时跑，互不冲突。并发即多个任务在统一的一个资源内执行，多个任务会抢占同一资源，在cpu中体现为交替执行，并不能同时执行，但是cpu在多个线程中切换的速度会非常快，所以宏观上看似是同时的。最大的区别体现在【同时】">
-<meta property="og:locale">
+<meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://imgconvert.csdnimg.cn/aHR0cHM6Ly91cGxvYWQtaW1hZ2VzLmppYW5zaHUuaW8vdXBsb2FkX2ltYWdlcy83NTU3MzczLTcyOTEyZWE4ZTg5YzQwMDcuanBn?x-oss-process=image/format,png">
 <meta property="og:image" content="https://imgconvert.csdnimg.cn/aHR0cHM6Ly91cGxvYWQtaW1hZ2VzLmppYW5zaHUuaW8vdXBsb2FkX2ltYWdlcy83NTU3MzczLWRhNjRmZmQ2ZDFlZmZhYWMuanBn?x-oss-process=image/format,png">
 <meta property="og:image" content="https://imgconvert.csdnimg.cn/aHR0cHM6Ly9jYW1vLmdpdGh1YnVzZXJjb250ZW50LmNvbS9iMDJiNjU0Mzk3YjE3YTE5OWFhMDI3MjdiNmVkNjVkZjBkZDRlZTE5LzY4NzQ3NDcwNzMzYTJmMmY2OTZkNjcyZDYyNmM2ZjY3MmU2MzczNjQ2ZTY5NmQ2NzJlNjM2ZTJmMzIzMDMxMzgzMTMwMzMzMTMxMzAzNTM2MzIzNzM0MzMzNzJlNzA2ZTY3M2Y3ODJkNmY3MzczMmQ3MDcyNmY2MzY1NzM3MzNkNjk2ZDYxNjc2NTJmNzc2MTc0NjU3MjZkNjE3MjZiMmM3NDc5NzA2NTVmNWE2ZDQ2NzU1YTMzNzA2ZjVhNTczNTZlNjE0NzU2NzA2NDQ3NmIyYzczNjg2MTY0NmY3NzVmMzEzMDJjNzQ2NTc4NzQ1ZjYxNDg1MjMwNjM0ODRkMzY0Yzc5Mzk2OTYyNDczOTZlNGM2ZDRlN2E1YTQ3MzQ3NTYyNmQ1NjMwNGMzMzcwNmY2MjMzNTUzNTRkNmE0MTMzNGY0NDU5N2E0ZDU0NDkzZDJjNzM2OTdhNjU1ZjMxMzYyYzYzNmY2YzZmNzI1ZjQ2NDY0NjQ2NDY0NjJjNzQ1ZjM3MzA?x-oss-process=image/format,png">
@@ -46,7 +46,7 @@
     sidebar: "",
     isHome : false,
     isPost : true,
-    lang   : 'zh-Hans'
+    lang   : 'zh-CN'
   };
 </script>
 
@@ -90,7 +90,7 @@
     <header class="header" itemscope itemtype="http://schema.org/WPHeader">
       <div class="header-inner"><div class="site-brand-container">
   <div class="site-nav-toggle">
-    <div class="toggle" aria-label="Navigationsleiste an/ausschalten">
+    <div class="toggle" aria-label="切换导航栏">
       <span class="toggle-line toggle-line-first"></span>
       <span class="toggle-line toggle-line-middle"></span>
       <span class="toggle-line toggle-line-last"></span>
@@ -119,12 +119,32 @@
   <ul id="menu" class="main-menu menu">
         <li class="menu-item menu-item-home">
 
-    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Startseite</a>
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
 
   </li>
         <li class="menu-item menu-item-archives">
 
-    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archiv</a>
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-schedule">
+
+    <a href="/schedule/" rel="section"><i class="fa fa-calendar fa-fw"></i>日程表</a>
 
   </li>
   </ul>
@@ -154,7 +174,7 @@
     
   
   
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://jiazx.top/2020/08/16/juc-1/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -176,10 +196,10 @@
               <span class="post-meta-item-icon">
                 <i class="far fa-calendar"></i>
               </span>
-              <span class="post-meta-item-text">Veröffentlicht am</span>
+              <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="Erstellt: 2020-08-16 17:08:07 / Geändert am: 17:08:54" itemprop="dateCreated datePublished" datetime="2020-08-16T17:08:07+08:00">2020-08-16</time>
+              <time title="创建时间：2020-08-16 17:08:07 / 修改时间：17:08:54" itemprop="dateCreated datePublished" datetime="2020-08-16T17:08:07+08:00">2020-08-16</time>
             </span>
 
           
@@ -354,10 +374,10 @@
 
       <ul class="sidebar-nav motion-element">
         <li class="sidebar-nav-toc">
-          Inhaltsverzeichnis
+          文章目录
         </li>
         <li class="sidebar-nav-overview">
-          Übersicht
+          站点概览
         </li>
       </ul>
 
@@ -378,12 +398,12 @@
           <a href="/archives/">
         
           <span class="site-state-item-count">41</span>
-          <span class="site-state-item-name">Artikel</span>
+          <span class="site-state-item-name">日志</span>
         </a>
       </div>
       <div class="site-state-item site-state-tags">
         <span class="site-state-item-count">9</span>
-        <span class="site-state-item-name">schlagwörter</span>
+        <span class="site-state-item-name">标签</span>
       </div>
   </nav>
 </div>
@@ -415,7 +435,7 @@
   </span>
   <span class="author" itemprop="copyrightHolder">Stephen Jia</span>
 </div>
-  <div class="powered-by">Erstellt mit  <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
   </div>
 
         
