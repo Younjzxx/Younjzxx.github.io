@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.0.2">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.14.0/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css">
+
+<script class="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"jiazx.top","root":"/","scheme":"Muse","version":"8.0.0-rc.5","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false};
+  </script>
+
+  <meta name="description" content="项目添加redis的session依赖将分布式session存储在redis内：打开项目的pom.xml，导入springboot对reids的依赖 12345678&lt;dependency&gt;  &lt;groupId&gt;org.springframework.boot&lt;&#x2F;groupId&gt;  &lt;artifactId&gt;spring-boot-starter-da">
+<meta property="og:type" content="article">
+<meta property="og:title" content="阿里云个人服务器搭建项目笔记五：分布式扩展之后的分布式session问题解决">
+<meta property="og:url" content="http://jiazx.top/2020/08/16/%E9%A1%B9%E7%9B%AE-6/index.html">
+<meta property="og:site_name" content="J Blog">
+<meta property="og:description" content="项目添加redis的session依赖将分布式session存储在redis内：打开项目的pom.xml，导入springboot对reids的依赖 12345678&lt;dependency&gt;  &lt;groupId&gt;org.springframework.boot&lt;&#x2F;groupId&gt;  &lt;artifactId&gt;spring-boot-starter-da">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-08-16T09:02:35.000Z">
+<meta property="article:modified_time" content="2020-08-16T09:03:47.010Z">
+<meta property="article:author" content="Stephen Jia">
+<meta property="article:tag" content="项目">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://jiazx.top/2020/08/16/%E9%A1%B9%E7%9B%AE-6/">
+
+
+<script class="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>阿里云个人服务器搭建项目笔记五：分布式扩展之后的分布式session问题解决 | J Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header {
+    visibility: visible;
+  }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">J Blog</h1>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <section class="post-toc-wrap sidebar-panel">
+          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%A1%B9%E7%9B%AE%E6%B7%BB%E5%8A%A0redis%E7%9A%84session%E4%BE%9D%E8%B5%96"><span class="nav-number">1.</span> <span class="nav-text">项目添加redis的session依赖</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%BA%93%E6%9C%8D%E5%8A%A1%E5%99%A8%E5%AE%89%E8%A3%85redis4-0-1"><span class="nav-number">2.</span> <span class="nav-text">数据库服务器安装redis4.0.1</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%9C%AC%E5%9C%B0%E9%83%A8%E7%BD%B2%E6%B5%8B%E8%AF%95"><span class="nav-number">3.</span> <span class="nav-text">本地部署测试</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#token%E6%96%B9%E5%BC%8F%E6%9B%BF%E4%BB%A3%E5%9F%BA%E4%BA%8Ecookie%E4%BC%A0%E9%80%92sessionId"><span class="nav-number">4.</span> <span class="nav-text">token方式替代基于cookie传递sessionId</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%80%BB%E7%BB%93%EF%BC%9A"><span class="nav-number">5.</span> <span class="nav-text">总结：</span></a></li></ol></div>
+      </section>
+      <!--/noindex-->
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Stephen Jia</p>
+  <div class="site-description" itemprop="description">Try Everything......</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives">
+          <span class="site-state-item-count">11</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </section>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+      
+
+      
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://jiazx.top/2020/08/16/%E9%A1%B9%E7%9B%AE-6/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Stephen Jia">
+      <meta itemprop="description" content="Try Everything......">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="J Blog">
+    </span>
+
+    
+    
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          阿里云个人服务器搭建项目笔记五：分布式扩展之后的分布式session问题解决
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-08-16 17:02:35 / 修改时间：17:03:47" itemprop="dateCreated datePublished" datetime="2020-08-16T17:02:35+08:00">2020-08-16</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <h1 id="项目添加redis的session依赖"><a href="#项目添加redis的session依赖" class="headerlink" title="项目添加redis的session依赖"></a>项目添加redis的session依赖</h1><p>将分布式session存储在redis内：<br>打开项目的pom.xml，导入springboot对reids的依赖</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&lt;dependency&gt;</span><br><span class="line">  &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;</span><br><span class="line">  &lt;artifactId&gt;spring-boot-starter-data-redis&lt;/artifactId&gt;</span><br><span class="line">&lt;/dependency&gt;</span><br><span class="line">&lt;dependency&gt;</span><br><span class="line">  &lt;groupId&gt;org.springframework.session&lt;/groupId&gt;</span><br><span class="line">  &lt;artifactId&gt;spring-session-data-redis&lt;/artifactId&gt;</span><br><span class="line">&lt;/dependency&gt;</span><br></pre></td></tr></table></figure>
+<p>添加如下依赖之后，可以增加一个配置类配置session存活时间：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="meta">@EnableRedisHttpSession(maxInactiveIntervalInSeconds = 3600)</span><span class="comment">//session存活一小时</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RedisConfig</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="数据库服务器安装redis4-0-1"><a href="#数据库服务器安装redis4-0-1" class="headerlink" title="数据库服务器安装redis4.0.1"></a>数据库服务器安装redis4.0.1</h1><p>我这里数据库服务器只有一台，而应用程序服务器是多台的，所以会出现分布式的session获取不到的问题，这里将redis安装到唯一的数据库服务器中。</p>
+<p>官网下载redis-4.0.1.tar.gz，放到服务器：<br>执行：<br>chmod - R 777 redis-4.0.1.tar.gz<br>tar -xvzf redis-4.0.1.tar.gz<br>cd redis-4.0.1<br>make<br>make install<br>cd src<br>./redis-server &amp;<br>./redis-cli<br>安装并启动redis</p>
+<h1 id="本地部署测试"><a href="#本地部署测试" class="headerlink" title="本地部署测试"></a>本地部署测试</h1><p>修改application.properties:<br>增加redis配置</p>
+<p>#配置springboot对redis的依赖<br>spring.redis.host=127.0.0.1 # 这里之后还要修改<br>spring.redis.port=6379<br>spring.redis.database=10<br>#spring.redis.password=</p>
+<p>#设置jedis连接池<br>spring.redis.jedis.pool.max-active=50<br>spring.redis.jedis.pool.min-idle=20</p>
+<p>将用户登录的session模型类实现Serializable使redis可以序列化</p>
+<p>之后测试登录：<br>登录成功</p>
+<p>踩坑：<br>但是……坑爹的来了，测试获取验证码失败。<br>一步一步debug：发现redis内有数据，key也是正确的，<strong>但是获取却一直为null。</strong><br>因为我的验证码的获取和用户输入是两个不同的页面，所以为了安全起见，session默认会被获取为null。<br><strong>查阅资料得出，如果满足以下几点，session可能获取为null。</strong></p>
+<ul>
+<li>使用了springboot2.x，并且前后端资源是跨域的。</li>
+<li>获取session的请求接口是post方式发送的</li>
+<li>存储session和取得session是不同的两个页面。</li>
+</ul>
+<p>满足以上三点，session的获取就会为null；<br>解决方案，编写配置类</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Configuration</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SpringSessionConfig</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">SpringSessionConfig</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Bean</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> CookieSerializer <span class="title">httpSessionIdResolver</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        DefaultCookieSerializer cookieSerializer = <span class="keyword">new</span> DefaultCookieSerializer();</span><br><span class="line">        <span class="comment">// 取消仅限同一站点设置</span></span><br><span class="line">        cookieSerializer.setSameSite(<span class="keyword">null</span>);</span><br><span class="line">        <span class="keyword">return</span> cookieSerializer;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>成功完成session跨页获取<br>至此为止，分布式session的问题被解决。不会出现用户登录失效的问题。</p>
+<h1 id="token方式替代基于cookie传递sessionId"><a href="#token方式替代基于cookie传递sessionId" class="headerlink" title="token方式替代基于cookie传递sessionId"></a>token方式替代基于cookie传递sessionId</h1><p>项目代码中修改，将传统session方式替代。这样的好处是可以使用多个平台的兼容性。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"> <span class="comment">//生成登录凭证token，每个用户不重复的uuid</span></span><br><span class="line">        String uuidToken = UUID.randomUUID().toString();</span><br><span class="line">        uuidToken = uuidToken.replace(<span class="string">&quot;-&quot;</span>, <span class="string">&quot;&quot;</span>);</span><br><span class="line">        <span class="comment">//建立token和登陆之后用户模型之间的联系</span></span><br><span class="line">        redisTemplate.opsForValue().set(uuidToken, userBO);</span><br><span class="line">        <span class="comment">//设置超时时间一个小时</span></span><br><span class="line">        redisTemplate.expire(uuidToken,<span class="number">1</span>, TimeUnit.HOURS);</span><br><span class="line"><span class="comment">//        //将登录凭证加入到用户登陆成功的session</span></span><br><span class="line"><span class="comment">//        this.httpServletRequest.getSession().setAttribute(&quot;IS_LOGIN&quot;, true);</span></span><br><span class="line"><span class="comment">//        this.httpServletRequest.getSession().setAttribute(&quot;LOGIN_USER&quot;, userBO);</span></span><br><span class="line">        <span class="comment">//下发token</span></span><br><span class="line">        <span class="keyword">return</span> CommonReturnType.create(uuidToken);</span><br></pre></td></tr></table></figure>
+
+<p>前端判断登录成功之后存储token的代码：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> token = data.data;</span><br><span class="line"><span class="comment">//html5新出的token方式localStorage，比cookie session安全且没有容量限制</span></span><br><span class="line"><span class="built_in">window</span>.localStorage[<span class="string">&quot;token&quot;</span>]=token;</span><br></pre></td></tr></table></figure>
+
+<p>需要验证用户登录信息时，验证token是否存在：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> token = <span class="built_in">window</span>.localStorage[<span class="string">&quot;token&quot;</span>];</span><br><span class="line">            <span class="keyword">if</span>(token == <span class="literal">null</span>)&#123;</span><br><span class="line">                alert(<span class="string">&quot;没有登录，不能下单！&quot;</span>);</span><br><span class="line">                <span class="built_in">window</span>.location.href=<span class="string">&quot;login.html&quot;</span>;</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">            &#125;</span><br></pre></td></tr></table></figure>
+
+<p>后端负责验证token信息是否正确，并从token获取用户模型：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">String token = httpServletRequest.getParameterMap().get(<span class="string">&quot;token&quot;</span>)[<span class="number">0</span>];</span><br><span class="line">        <span class="keyword">if</span>(StringUtils.isEmpty(token))&#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> BusinessException(EmBusinessError.USER_NOT_LOGIN,<span class="string">&quot;用户还未登录，不能下单&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">//获取用户登录信息</span></span><br><span class="line">        UserBO userBO = (UserBO) redisTemplate.opsForValue().get(token);</span><br><span class="line">        <span class="keyword">if</span>(userBO == <span class="keyword">null</span>)&#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> BusinessException(EmBusinessError.USER_NOT_LOGIN,<span class="string">&quot;用户还未登录，不能下单&quot;</span>);</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
+
+<p>最后别忘了将token放到ajax请求的url中（参数拼上?token=”+token）：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">//登录成功之后，将用户模型存入前台的localStorage</span><br><span class="line">            var token = data.data;</span><br><span class="line">//html5新出的token方式localStorage，比cookie session安全且没有容量限制</span><br><span class="line">            window.localStorage[&quot;token&quot;]=token;</span><br><span class="line">//....................................................................</span><br><span class="line">            var token = window.localStorage[&quot;token&quot;];//从前台localStorage获取token</span><br><span class="line">            $.ajax(&#123;</span><br><span class="line">                type: &quot;POST&quot;,</span><br><span class="line">                url: &quot;http://&quot;+g_host+&quot;/order/createorder?token=&quot;+token,</span><br><span class="line">                contentType: &quot;application/x-www-form-urlencoded&quot;,</span><br></pre></td></tr></table></figure>
+
+<p>本地调试成功之后，部署到云端的数据库服务器中，因为我这里暂时还没有主从服务器，只有一台数据库服务器，所以把redis安装在了mysql数据库服务器中，两者共用一台服务器。</p>
+<p>将两台应用程序服务器的application.properties都修改，增加如下的配置：<br>spring.redis.host=数据库服务器的私网ip。<br>之后重新启动两个应用程序jar包，调试，成功。</p>
+<h1 id="总结："><a href="#总结：" class="headerlink" title="总结："></a>总结：</h1><p>这篇文章主要解决的问题是：<br>用户登录信息的session经过分布式扩展之后可能获取不到的问题，从基于cookie传递sessionID的方式转化为基于token传输类似于sessionID的形式，并且使session迁移至公共的redis数据库中。</p>
+<p>解决方式：<br>通过redis集中式缓存sessionID。并通过redisTemplate.opsForValue().set(uuidToken, userBO);实现session的存取。<br>UserBO userBO = (UserBO) redisTemplate.opsForValue().get(token);实现session的获取。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E9%A1%B9%E7%9B%AE/" rel="tag"># 项目</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2020/08/16/%E9%A1%B9%E7%9B%AE-5/" rel="prev" title="阿里云个人服务器搭建项目笔记四：nginx反向代理优化，分布式扩展">
+                  <i class="fa fa-chevron-left"></i> 阿里云个人服务器搭建项目笔记四：nginx反向代理优化，分布式扩展
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2020/08/16/%E9%A1%B9%E7%9B%AE-7/" rel="next" title="阿里云个人服务器搭建项目笔记六：商品详情信息缓存策略">
+                  阿里云个人服务器搭建项目笔记六：商品详情信息缓存策略 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+      
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      const activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      const commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      
+
+      
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Stephen Jia</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="//cdn.jsdelivr.net/npm/animejs@3.2.0/lib/anime.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

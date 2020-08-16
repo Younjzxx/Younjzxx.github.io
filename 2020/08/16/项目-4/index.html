@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.0.2">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.14.0/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css">
+
+<script class="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"jiazx.top","root":"/","scheme":"Muse","version":"8.0.0-rc.5","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false};
+  </script>
+
+  <meta name="description" content="下载并启动jemeter下载好jemeter5并解压之后，可以先打开jemeter目录下的bin\jmeter.properties文件设置语言：在#language&#x3D;en下面新加一行添加：language&#x3D;zh_CN 设置显示中文。然后直接运行jemeter.bat可以直接在windows端打开压测工具。 jemeter压测配置jemeter压测主要需要以下配置：  线程组：启动多个并发的线程发">
+<meta property="og:type" content="article">
+<meta property="og:title" content="阿里云个人服务器搭建项目笔记三：jemeter工具对项目接口进行并发压测，初步优化。">
+<meta property="og:url" content="http://jiazx.top/2020/08/16/%E9%A1%B9%E7%9B%AE-4/index.html">
+<meta property="og:site_name" content="J Blog">
+<meta property="og:description" content="下载并启动jemeter下载好jemeter5并解压之后，可以先打开jemeter目录下的bin\jmeter.properties文件设置语言：在#language&#x3D;en下面新加一行添加：language&#x3D;zh_CN 设置显示中文。然后直接运行jemeter.bat可以直接在windows端打开压测工具。 jemeter压测配置jemeter压测主要需要以下配置：  线程组：启动多个并发的线程发">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-08-16T09:01:00.000Z">
+<meta property="article:modified_time" content="2020-08-16T09:03:37.042Z">
+<meta property="article:author" content="Stephen Jia">
+<meta property="article:tag" content="项目">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://jiazx.top/2020/08/16/%E9%A1%B9%E7%9B%AE-4/">
+
+
+<script class="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>阿里云个人服务器搭建项目笔记三：jemeter工具对项目接口进行并发压测，初步优化。 | J Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header {
+    visibility: visible;
+  }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">J Blog</h1>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <section class="post-toc-wrap sidebar-panel">
+          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%8B%E8%BD%BD%E5%B9%B6%E5%90%AF%E5%8A%A8jemeter"><span class="nav-number">1.</span> <span class="nav-text">下载并启动jemeter</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#jemeter%E5%8E%8B%E6%B5%8B%E9%85%8D%E7%BD%AE"><span class="nav-number">2.</span> <span class="nav-text">jemeter压测配置</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%BC%80%E5%A7%8B%E5%8E%8B%E6%B5%8B"><span class="nav-number">3.</span> <span class="nav-text">开始压测</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%88%9D%E6%AD%A5%E4%BC%98%E5%8C%96"><span class="nav-number">4.</span> <span class="nav-text">初步优化</span></a></li></ol></div>
+      </section>
+      <!--/noindex-->
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Stephen Jia</p>
+  <div class="site-description" itemprop="description">Try Everything......</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives">
+          <span class="site-state-item-count">11</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </section>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+      
+
+      
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://jiazx.top/2020/08/16/%E9%A1%B9%E7%9B%AE-4/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Stephen Jia">
+      <meta itemprop="description" content="Try Everything......">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="J Blog">
+    </span>
+
+    
+    
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          阿里云个人服务器搭建项目笔记三：jemeter工具对项目接口进行并发压测，初步优化。
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-08-16 17:01:00 / 修改时间：17:03:37" itemprop="dateCreated datePublished" datetime="2020-08-16T17:01:00+08:00">2020-08-16</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <h1 id="下载并启动jemeter"><a href="#下载并启动jemeter" class="headerlink" title="下载并启动jemeter"></a>下载并启动jemeter</h1><p>下载好jemeter5并解压之后，可以先打开jemeter目录下的bin\jmeter.properties文件设置语言：在#language=en下面新加一行添加：<strong>language=zh_CN</strong> 设置显示中文。然后直接运行jemeter.bat可以直接在windows端打开压测工具。</p>
+<h1 id="jemeter压测配置"><a href="#jemeter压测配置" class="headerlink" title="jemeter压测配置"></a>jemeter压测配置</h1><p>jemeter压测主要需要以下配置：</p>
+<ul>
+<li>线程组：启动多个并发的线程发送接口请求，用来测试服务端压力，可以配置线程数，循环次数等等。</li>
+<li>Http请求：线程组发送http请求，需要指定服务器名称或ip，端口号和压测路径。并且打开keepAlive来忽略因为长连接因素造成的误差。（tips：服务器名称可以通过driver/etc/hosts文件来指定，指定的格式为 <strong>云服务器ip地址  服务器名称</strong>）这样在访问的时候就可以直接输入服务器名称，而不用去记ip。</li>
+<li>查看结果树：http请求发送之后，查看http返回的结果。</li>
+<li>聚合报告：记录了线程组进行压测的结果的各项指标。包括tps和qps。</li>
+</ul>
+<h1 id="开始压测"><a href="#开始压测" class="headerlink" title="开始压测"></a>开始压测</h1><p>jemeter内先保存压测的信息，然后点击绿色运行按钮进行压测。然后可以查看结果树和聚合报告：<br>聚合报告内各个标签意义：</p>
+<ul>
+<li>average：平均响应时间</li>
+<li>median：中位数的响应时间</li>
+<li>90% line：有百分之90的请求是在这个结果的时间之内返回的，<strong>95% line</strong>， 99% line类似。</li>
+<li>min：最短的返回时间</li>
+<li>max：最长的返回时间</li>
+<li><strong>throughput(tps)：每秒处理事务数，每秒收发包的数量:比如在10秒内成功处理500个并发请求，那么tps就是50。</strong></li>
+</ul>
+<p>聚合报告中：<strong>比较重要的是95%线和tps。</strong></p>
+<p>准备压测：<br>1.ps -ef | grep java 查看java的进程编号，我这里是21079.</p>
+<p>2.使用pstree 21079，查看有多少个线程数量</p>
+<p>3.top -H 查看服务器的各项实时指标：<br>%cpus ： us为用户占用的， sy为系统占用的，一般观察us<br>load average：代表的收发的压力</p>
+<p>4.打开jemeter，设置线程数，这里我设置的线程数为100个，每个线程循环请求10次，共1000次请求，100个线程在10秒内启动。</p>
+<p>5.结果，us最高达到了38.8%，没有出错的线程，还不够，再加！<br>设置线程数500个。一边运行一边查看聚合报告，这次qps最高能达到250多。查看top -H发现mysql的cpu占用非常高。因为我测试的接口压力基本都来自数据库。还是不太够，可以直接加多一些，看看出错的原因在哪里。</p>
+<p>6.这次我设置线程数为5000，循环100次。这次顶不住了。。。<br>查看 pstree -p 21079 | wc -l  ——&gt;59<br>最高才能走59个并发。所以肯定是有问题的，下面是优化。</p>
+<h1 id="初步优化"><a href="#初步优化" class="headerlink" title="初步优化"></a>初步优化</h1><p>打开项目的springboot内嵌的tomcat的配置文件。<br>查看可能与并发多线程相关的参数：</p>
+<p><strong>server.tomcat.accept-count : 默认是100。这个参数是当tomcat的线程被全部占满之后最大的等待队列的大小。即当等待队列达到100个的时候，再进来的请求线程会被拒绝掉。<br>server.tomcat.min-spare-threads ：默认是10。这个是tomcat应对突发的流量入口的时候的默认启动的线程数，可以理解为最小线程数。<br>server.tomcat.max-connections： 默认10000，可接受的最大连接数。<br>server.tomcat.max-threads：默认200。tomcat最大支持的工作线程数。</strong></p>
+<p>这样的配置下：连接超过10000之后会出现拒绝连接的情况。请求的线程数超过200+100（等待队列+最大线程数）之后拒绝处理（刚才启动了5000个线程，大量的线程会失败）。</p>
+<p>所以我们<strong>第一步的优化就是修改tomcat的并发相关的配置</strong>。不做这个配置任何其他优化都收效甚微。</p>
+<p>打开挂载的springboot配置文件application.properties<br>修改上面四个当中的三个配置：<br><strong>server.tomcat.accept-count=800<br>server.tomcat.max-threads=500<br>server.tomcat.min-spare-threads=100</strong></p>
+<p><strong>主要将最小线程数和最大线程数调高，并把等待队列大小扩容。<br>但是：<br>1.最大线程数不能无限大，太大的话会花费巨大的时间在cpu调度，一般4核8g的服务器会设置为1000以下，这里我是4g的就设置为500。<br>2.等待队列长度也不能过大，等待队列相当于线程的缓冲池，太大会很耗内存，出入队操作也耗费cpu</strong></p>
+<p>设置好之后，重启项目 ./deploy.sh &amp;<br>将并发数调到一个合理的范围：大概200-500之间，循环次数50次。<br>发现延时300ms左右，tps200左右。无错误。</p>
+<p>还有比较重要的keepalive方面的参数，springboot并没有对外开放，需要自己写WebServerFactoryCustomize &lt;ConfigurableWebServerFactory&gt;<br>的实现类来配置：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//当spring容器内没有TomcatEmbeddedServletContainerFactory这个bean的时候，会把bean加载进来。</span></span><br><span class="line"><span class="meta">@Component</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">WebServerConfiguration</span> <span class="keyword">implements</span> <span class="title">WebServerFactoryCustomizer</span>&lt;<span class="title">ConfigurableWebServerFactory</span>&gt; </span>&#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">customize</span><span class="params">(ConfigurableWebServerFactory factory)</span> </span>&#123;</span><br><span class="line">        <span class="comment">//使用对应工厂类提供的接口定制化我们的tomcat connector</span></span><br><span class="line">        ((TomcatServletWebServerFactory)factory).addConnectorCustomizers(<span class="keyword">new</span> TomcatConnectorCustomizer() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">customize</span><span class="params">(Connector connector)</span> </span>&#123;</span><br><span class="line">                Http11NioProtocol protocol = (Http11NioProtocol) connector.getProtocolHandler();</span><br><span class="line">                <span class="comment">//定制化keepAliveTimeOut,30秒，30秒内没有请求，服务端才会断开keepalive连接</span></span><br><span class="line">                protocol.setKeepAliveTimeout(<span class="number">30000</span>);</span><br><span class="line">                <span class="comment">//当客户端发送超过10000个请求，则自动断开keepalive连接</span></span><br><span class="line">                protocol.setMaxKeepAliveRequests(<span class="number">10000</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>到此为止，tomcat的参数优化基本完成，tps仍然不高，后续优化。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E9%A1%B9%E7%9B%AE/" rel="tag"># 项目</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2020/08/16/%E9%A1%B9%E7%9B%AE-3/" rel="prev" title="阿里云个人服务器搭建项目笔记二：springboot项目打包部署到服务器">
+                  <i class="fa fa-chevron-left"></i> 阿里云个人服务器搭建项目笔记二：springboot项目打包部署到服务器
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2020/08/16/%E9%A1%B9%E7%9B%AE-5/" rel="next" title="阿里云个人服务器搭建项目笔记四：nginx反向代理优化，分布式扩展">
+                  阿里云个人服务器搭建项目笔记四：nginx反向代理优化，分布式扩展 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+      
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      const activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      const commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      
+
+      
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Stephen Jia</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="//cdn.jsdelivr.net/npm/animejs@3.2.0/lib/anime.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

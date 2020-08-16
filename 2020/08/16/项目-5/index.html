@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.0.2">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.14.0/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css">
+
+<script class="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"jiazx.top","root":"/","scheme":"Muse","version":"8.0.0-rc.5","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false};
+  </script>
+
+  <meta name="description" content="首先我们需要思考上一个章节并发上不去的原因。发现在并发环境下mysql数据库的压力始终很大，一台服务器上面不仅仅要跑java的jar包程序，还要承受高并发访问数据库的压力。这样的压力都在同一台服务器上显然存在缺陷。所以我们可以购买多台服务器。 一台专门用来部署项目的数据库。两台或多台用来部署项目jar包。一台用来配置部署nginx反向代理。 首先这里购买4台服务器，两台跑java，一台部署数据库，">
+<meta property="og:type" content="article">
+<meta property="og:title" content="阿里云个人服务器搭建项目笔记四：nginx反向代理优化，分布式扩展">
+<meta property="og:url" content="http://jiazx.top/2020/08/16/%E9%A1%B9%E7%9B%AE-5/index.html">
+<meta property="og:site_name" content="J Blog">
+<meta property="og:description" content="首先我们需要思考上一个章节并发上不去的原因。发现在并发环境下mysql数据库的压力始终很大，一台服务器上面不仅仅要跑java的jar包程序，还要承受高并发访问数据库的压力。这样的压力都在同一台服务器上显然存在缺陷。所以我们可以购买多台服务器。 一台专门用来部署项目的数据库。两台或多台用来部署项目jar包。一台用来配置部署nginx反向代理。 首先这里购买4台服务器，两台跑java，一台部署数据库，">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-08-16T09:02:12.000Z">
+<meta property="article:modified_time" content="2020-08-16T09:03:35.109Z">
+<meta property="article:author" content="Stephen Jia">
+<meta property="article:tag" content="项目">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://jiazx.top/2020/08/16/%E9%A1%B9%E7%9B%AE-5/">
+
+
+<script class="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>阿里云个人服务器搭建项目笔记四：nginx反向代理优化，分布式扩展 | J Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header {
+    visibility: visible;
+  }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">J Blog</h1>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <section class="post-toc-wrap sidebar-panel">
+          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BA%8F%E6%9C%8D%E5%8A%A1%E5%99%A8%EF%BC%88%E4%B8%A4%E5%8F%B0%EF%BC%89"><span class="nav-number">1.</span> <span class="nav-text">应用程序服务器（两台）</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%95%B0%E6%8D%AE%E5%BA%93%E6%9C%8D%E5%8A%A1%E5%99%A8"><span class="nav-number">2.</span> <span class="nav-text">数据库服务器</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE%E5%85%B6%E4%BB%96%E6%9C%8D%E5%8A%A1%E5%99%A8%E8%BF%9E%E6%8E%A5%E6%95%B0%E6%8D%AE%E5%BA%93%E7%9A%84%E6%9D%83%E9%99%90"><span class="nav-number">2.1.</span> <span class="nav-text">配置其他服务器连接数据库的权限</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#nginx%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86%E6%9C%8D%E5%8A%A1%E5%99%A8"><span class="nav-number">3.</span> <span class="nav-text">nginx反向代理服务器</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%B0%86%E5%89%8D%E7%AB%AF%E8%B5%84%E6%BA%90%E9%83%A8%E7%BD%B2%E5%88%B0nginx%E4%B8%8A%E3%80%82"><span class="nav-number">4.</span> <span class="nav-text">将前端资源部署到nginx上。</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%BC%80%E5%A7%8B%E9%85%8D%E7%BD%AEnginx%E5%8F%8D%E5%90%91%E4%BB%A3%E7%90%86"><span class="nav-number">5.</span> <span class="nav-text">开始配置nginx反向代理</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%85%8D%E7%BD%AEupstream%EF%BC%9A"><span class="nav-number">5.1.</span> <span class="nav-text">配置upstream：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE%E5%8A%A8%E6%80%81%E8%B5%84%E6%BA%90%E7%9A%84location"><span class="nav-number">5.2.</span> <span class="nav-text">配置动态资源的location</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%88%86%E5%B8%83%E5%BC%8F%E6%89%A9%E5%B1%95%E4%B9%8B%E5%90%8E%E7%9A%84%E5%8E%8B%E6%B5%8B"><span class="nav-number">6.</span> <span class="nav-text">分布式扩展之后的压测</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%85%B6%E4%BB%96%E4%BC%98%E5%8C%96"><span class="nav-number">7.</span> <span class="nav-text">其他优化</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%85%8D%E7%BD%AEnginx%E5%92%8C%E5%BA%94%E7%94%A8%E6%9C%8D%E5%8A%A1%E5%99%A8%E9%95%BF%E8%BF%9E%E6%8E%A5"><span class="nav-number">7.1.</span> <span class="nav-text">配置nginx和应用服务器长连接</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%95%99%E4%B8%8B%E7%9A%84%E5%9D%91"><span class="nav-number">8.</span> <span class="nav-text">留下的坑</span></a></li></ol></div>
+      </section>
+      <!--/noindex-->
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Stephen Jia</p>
+  <div class="site-description" itemprop="description">Try Everything......</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives">
+          <span class="site-state-item-count">11</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </section>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+      
+
+      
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://jiazx.top/2020/08/16/%E9%A1%B9%E7%9B%AE-5/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Stephen Jia">
+      <meta itemprop="description" content="Try Everything......">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="J Blog">
+    </span>
+
+    
+    
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          阿里云个人服务器搭建项目笔记四：nginx反向代理优化，分布式扩展
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-08-16 17:02:12 / 修改时间：17:03:35" itemprop="dateCreated datePublished" datetime="2020-08-16T17:02:12+08:00">2020-08-16</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>首先我们需要思考上一个章节并发上不去的原因。发现在并发环境下mysql数据库的压力始终很大，一台服务器上面不仅仅要跑java的jar包程序，还要承受高并发访问数据库的压力。这样的压力都在同一台服务器上显然存在缺陷。所以我们可以购买多台服务器。</p>
+<p>一台专门用来部署项目的数据库。<br>两台或多台用来部署项目jar包。<br>一台用来配置部署nginx反向代理。</p>
+<p>首先这里购买4台服务器，两台跑java，一台部署数据库，一台部署nginx。</p>
+<p>部署前准备：<br>将原来的  //var/www项目文件夹传输至另两台需要部署jar包的服务器中,原来的服务器就用来部署mysql数据库。</p>
+<p>使用scp：<br><strong>scp  -r   //var/www  root@目标服务器ip地址:/var</strong>，然后输入密码即可。<br>这里如果购买的多台服务器都是阿里云的同一地区的服务器，用私有ip进行传输，因为阿里云同一地区的服务器是内网互通的，互相传输快的飞起。</p>
+<p>分别将www内的项目文件传输完成之后。准备在两台服务器上面配置数据库连接并启动。</p>
+<h1 id="应用程序服务器（两台）"><a href="#应用程序服务器（两台）" class="headerlink" title="应用程序服务器（两台）"></a>应用程序服务器（两台）</h1><p>先在两台应用程序服务器上rpm安装jdk，之前的笔记中有操作流程这里不再赘述。<br>切换到项目www/seckill目录准备启动项目。在把jar包跑起来之前，先要将接收到的配置文件修改一下，因为，项目中的application.properties文件默认的datasource.url是localhost:3306。如果这样启动起来，是找不到数据库的，因为应用程序服务器并不是用来部署数据库的，所以，我们打开外挂的配置文件修改datasource：<br>vim application.properties.<br>添加下面一行配置：<br><strong>spring.datasource.url=jdbc:mysql://数据库服务器的内网ip:3306/seckillboot?serverTimezone=GMT%2B8</strong><br>数据库服务器的内网地址即刚刚传输项目的服务器，<strong>必须用内网ip保证数据库访问速度</strong>。</p>
+<p>配置好DataSource之后，在启动项目之前，测试能否连接上数据库的服务器：<br><strong>yum install telnet</strong><br><strong>telnet  数据库服务器ip  3306</strong><br>结果发现，远程数据库拒绝了连接。<br>这时候我们要去数据库服务器配置mysql的远程连接权限（见第二部分）。<br>配置好之后再次telnet ip:3306测试连接，提示输入数据库密码即可连接，这里就不连了，直接 <strong>./deploy.sh &amp;</strong> 启动项目即可。<br>启动项目之后，访问 <strong>项目服务器公有ip/可以访问数据库的路径，我的是ip/item/get?id=9，可以显示出从数据库获取的item数据，表示部署成功（两台服务器操作相同）</strong></p>
+<h1 id="数据库服务器"><a href="#数据库服务器" class="headerlink" title="数据库服务器"></a>数据库服务器</h1><h2 id="配置其他服务器连接数据库的权限"><a href="#配置其他服务器连接数据库的权限" class="headerlink" title="配置其他服务器连接数据库的权限"></a>配置其他服务器连接数据库的权限</h2><p>只要知道数据库的root的密码就可以有全部数据库的全部权限,最后刷新权限，无需重启数据库，可以这样配置。<br><strong>mysql -uroot -p密码<br>grant all privileges on *.* to root@’%’ identified by ‘root’;</strong><br><strong>flush privileges;</strong></p>
+<p>这时，到应用程序服务器上就可以访问到数据库服务器的数据库。<br>下面是nginx反向代理服务器的配置。</p>
+<h1 id="nginx反向代理服务器"><a href="#nginx反向代理服务器" class="headerlink" title="nginx反向代理服务器"></a>nginx反向代理服务器</h1><p>在部署nginx的服务器上安装openresty：<br>1.下载openresty并上传到部署nginx的服务器。<br>2.chomd -R 777授予权限，<strong>tar -xvzf  包名</strong>  安装解压。<br>3.cd 解压后的openresty目录。<br>4.   执行 <strong>./configure</strong>（需要先yum install gcc）<br>5. <strong>make</strong>编译完成之后，<strong>make install</strong><br>6. <strong>cd //user/local/openresty</strong>进入openresty目录。<br>7. 在nginx目录下，cd ls直到出现conf  html  logs  sbin四个文件夹。在这个目录下执行<strong>sbin/nginx -c conf/nginx.conf 启动nginx</strong>，配置文件的主要参数：<br>location节点path：指定url映射key<br>location节点内容：root指定location path后对应的根路径，index指定默认的访问页。<br><strong>重启nginx的命令</strong>为：<strong>sbin/nginx -s reload</strong></p>
+<p>8.启动nginx之后访问服务器ip会显示openresty的成功页。<br>至此nginx安装部署完成。</p>
+<h1 id="将前端资源部署到nginx上。"><a href="#将前端资源部署到nginx上。" class="headerlink" title="将前端资源部署到nginx上。"></a>将前端资源部署到nginx上。</h1><p>1.将本地的html文件上传到服务器的：/usr/local/openresty/nginx/html路径下，并命名为resources文件夹。<br>2.vim编辑/usr/local/openresty/nginx/conf路径下的nginx.conf文件修改前端路由配置。<br>3.修改如下区域的配置</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#access_log  logs/host.access.log  main;</span></span><br><span class="line"></span><br><span class="line">location /resources/&#123;</span><br><span class="line">    <span class="built_in">alias</span>  /usr/<span class="built_in">local</span>/openresty/nginx/html/resources/;</span><br><span class="line">    index  index.html index.htm;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>即如果输入的路径地址包括了/resources下，那么就会自动去/usr/local/openresty/nginx/html/resources/这个alias路径下寻找资源，并且将对应名字的html资源拼接在后面，也就是说alias起到一个替代的作用</p>
+<h1 id="开始配置nginx反向代理"><a href="#开始配置nginx反向代理" class="headerlink" title="开始配置nginx反向代理"></a>开始配置nginx反向代理</h1><p>将静态资源部署到了nginx服务器之后，我们还要做以下操作配置反向代理以完成请求的路由：</p>
+<ul>
+<li>设置upstream server</li>
+<li>设置动态请求location为proxy pass路径。</li>
+</ul>
+<p>继续修改nginx.conf（这部分非常关键）：</p>
+<h2 id="配置upstream："><a href="#配置upstream：" class="headerlink" title="配置upstream："></a>配置upstream：</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">   <span class="comment">#gzip  on;</span></span><br><span class="line">   upstream seckill_server&#123;</span><br><span class="line">server 应用程序服务器1的私有ip:服务器的tomcat端口号 weight=1;</span><br><span class="line">server 应用程序服务器2的私有ip:服务器的tomcat端口号 weight=1;</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+<p>以上面代码为例，seckill_server是这个upstream的别名，下面要用到，ip和端口号指明了应用程序服务器的tomcat的路由地址，weight指明了nginx反向代理服务器配置的轮询是一比一的，也就是一半的请求轮询的路由到应用程序服务器1，一半到应用程序服务器2。（如果应用程序服务器在本机的话，要注意nginx和tomcat的端口号不能冲突，比如本机的tomcat端口号是8080，那么直接server localhost:8080;即可）</p>
+<h2 id="配置动态资源的location"><a href="#配置动态资源的location" class="headerlink" title="配置动态资源的location"></a>配置动态资源的location</h2><p>在上一次配置的静态资源的location的下面新增一个配置：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">location / &#123;</span><br><span class="line">        proxy_pass http://seckill_server; <span class="comment"># 刚刚配置好的别名</span></span><br><span class="line">        proxy_set_header Host <span class="variable">$http_host</span>:<span class="variable">$proxy_port</span>;    </span><br><span class="line">        proxy_set_header X-Real-IP <span class="variable">$remote_addr</span>;<span class="comment"># 真正的地址是远程的</span></span><br><span class="line">        proxy_set_header X-Forwarded-For <span class="variable">$proxy_add_x_forwarded_for</span>; <span class="comment"># nginx作为代理服务器转发请求</span></span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>配置的意思就是如果请求路径不包括resources，那么所有请求都会发送到seckill_server<br>之后sbin/nginx -s reload重启nginx，可以t进入logs目录tail -f error.log查看是否报错。</p>
+<p>==2020.2.23更新这里留下的坑==<br>nginx配置upstream的时候名字<strong>不能包含 _ 下划线</strong>！这里我配置的<strong>seckill_server</strong>就完美的踩到了这个坑…这里就不修改了，如果配置的话要注意一下，tomcat8及以上都会有这个问题。</p>
+<h1 id="分布式扩展之后的压测"><a href="#分布式扩展之后的压测" class="headerlink" title="分布式扩展之后的压测"></a>分布式扩展之后的压测</h1><p>先将服务器的带宽扩展以减少带宽造成的网络延迟误差。<br>先压测之前的单机服务器，开启1000个线程循环30次，5秒之内启动。<br>结果：<br>average：460ms左右<br>tps：1500左右<br>top -H-&gt;%Cpu(s)：最高达到了80us<br>load average:1.3<br>可以发现单机服务器的负载达到了在这个并发环境下近乎达到了极限。</p>
+<p>压测分布式扩展之后的服务器：<br>压测nginx代理服务器的代理地址，并观察数据库服务器的top -H：<br>结果：<br>average：450ms左右<br>tps：==1750==左右<br>top -H-&gt;%Cpu(s)：==2us==<br>load average:0.5<br>可以发现分布式扩展之后数据库服务器的压力明显减小。可以说解决了单机容量的瓶颈问题。</p>
+<h1 id="其他优化"><a href="#其他优化" class="headerlink" title="其他优化"></a>其他优化</h1><h2 id="配置nginx和应用服务器长连接"><a href="#配置nginx和应用服务器长连接" class="headerlink" title="配置nginx和应用服务器长连接"></a>配置nginx和应用服务器长连接</h2><p>我们的数据库服务器是通过druid连接池实现连接的，也就是数据库服务器默认是长连接的方式，但是nginx默认是和后端服务器默认是短连接的方式，有建立连接和释放连接的过程，虽然局域网内的服务器短连接耗时很少，但是还是需要优化。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">   <span class="comment">#gzip  on;</span></span><br><span class="line">   upstream seckill_server&#123;</span><br><span class="line">server 应用程序服务器1的私有ip:服务器的tomcat端口号 weight=1;</span><br><span class="line">server 应用程序服务器2的私有ip:服务器的tomcat端口号 weight=1;</span><br><span class="line">keepalive 30;<span class="comment"># 开启keepalive模式，设置keepalive为30秒</span></span><br><span class="line">   &#125;</span><br><span class="line">   </span><br></pre></td></tr></table></figure>
+<p>修改http协议版本以支持keepalive：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">location / &#123;</span><br><span class="line">     proxy_pass http://seckill_server;</span><br><span class="line">     <span class="comment">#proxy_set_header Host $http_host:$proxy_port;      </span></span><br><span class="line">     proxy_set_header X-Real-IP <span class="variable">$remote_addr</span>;</span><br><span class="line">     proxy_set_header X-Forwarded-For <span class="variable">$proxy_add_x_forwarded_for</span>;</span><br><span class="line">     proxy_http_version 1.1;</span><br><span class="line">     proxy_set_header Connection <span class="string">&quot;&quot;</span>;</span><br><span class="line"> &#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>再次压测结果：<br>average：==350ms==左右<br>tps：1750左右（变化不大）<br>top -H-&gt;%Cpu(s)：2us     （变化不大）<br>load average:0.5（变化不大）</p>
+<p>可以看出，配置了nginx和后端服务器的长连接之后，平均的请求时长降低了100ms，减少了网络不断建立和释放连接的耗时。</p>
+<h1 id="留下的坑"><a href="#留下的坑" class="headerlink" title="留下的坑"></a>留下的坑</h1><p>没有配置分布式的session，因为我的项目的用户登录的信息存储在tomcat的session内，如果nginx通过反向代理路由到了一台没有session的服务区上，那么用户将无法完成需要登录(get session)的操作。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E9%A1%B9%E7%9B%AE/" rel="tag"># 项目</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2020/08/16/%E9%A1%B9%E7%9B%AE-4/" rel="prev" title="阿里云个人服务器搭建项目笔记三：jemeter工具对项目接口进行并发压测，初步优化。">
+                  <i class="fa fa-chevron-left"></i> 阿里云个人服务器搭建项目笔记三：jemeter工具对项目接口进行并发压测，初步优化。
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2020/08/16/%E9%A1%B9%E7%9B%AE-6/" rel="next" title="阿里云个人服务器搭建项目笔记五：分布式扩展之后的分布式session问题解决">
+                  阿里云个人服务器搭建项目笔记五：分布式扩展之后的分布式session问题解决 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+      
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      const activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      const commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      
+
+      
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Stephen Jia</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="//cdn.jsdelivr.net/npm/animejs@3.2.0/lib/anime.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
