@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.0.2">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.14.0/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css">
+
+<script class="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"jiazx.top","root":"/","scheme":"Muse","version":"8.0.0-rc.5","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false};
+  </script>
+
+  <meta name="description" content="zookeeper概述&amp;特性 zookeeper是一个分布式的协调服务的开源框架，解决分布式系统集群之间的一致性的问题。 zookeeper本质是一个分布式的小的文件存储系统  特性：  全局数据一致性：最重要的特征，保证client连接每个集群中的server得到的结果都是一致的。 可靠性：消息被一台server接受，则被所有的server接受。 顺序性：server1上面有先执行a后执">
+<meta property="og:type" content="article">
+<meta property="og:title" content="zookeeper">
+<meta property="og:url" content="http://jiazx.top/2020/08/16/tool-2/index.html">
+<meta property="og:site_name" content="J Blog">
+<meta property="og:description" content="zookeeper概述&amp;特性 zookeeper是一个分布式的协调服务的开源框架，解决分布式系统集群之间的一致性的问题。 zookeeper本质是一个分布式的小的文件存储系统  特性：  全局数据一致性：最重要的特征，保证client连接每个集群中的server得到的结果都是一致的。 可靠性：消息被一台server接受，则被所有的server接受。 顺序性：server1上面有先执行a后执">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://www.jiazx.top/upload/2020/06/image-56c6af2c60e3442aabb80ab1c90e3ec0.png">
+<meta property="og:image" content="http://www.jiazx.top/upload/2020/06/image-0e1f9f5602ac4a47831dfd175f5a39fc.png">
+<meta property="article:published_time" content="2020-08-16T09:48:13.000Z">
+<meta property="article:modified_time" content="2020-08-16T09:49:49.188Z">
+<meta property="article:author" content="Stephen Jia">
+<meta property="article:tag" content="工具集">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://www.jiazx.top/upload/2020/06/image-56c6af2c60e3442aabb80ab1c90e3ec0.png">
+
+
+<link rel="canonical" href="http://jiazx.top/2020/08/16/tool-2/">
+
+
+<script class="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>zookeeper | J Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header {
+    visibility: visible;
+  }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">J Blog</h1>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <section class="post-toc-wrap sidebar-panel">
+          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#zookeeper%E6%A6%82%E8%BF%B0-amp-%E7%89%B9%E6%80%A7"><span class="nav-number">1.</span> <span class="nav-text">zookeeper概述&amp;特性</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#zookeeper%E9%9B%86%E7%BE%A4%E4%B8%AD%E7%9A%84%E8%A7%92%E8%89%B2"><span class="nav-number">2.</span> <span class="nav-text">zookeeper集群中的角色</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Leader"><span class="nav-number">2.1.</span> <span class="nav-text">Leader</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Follower"><span class="nav-number">2.2.</span> <span class="nav-text">Follower</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Watcher"><span class="nav-number">2.3.</span> <span class="nav-text">Watcher</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#zookeeper%E6%95%B0%E6%8D%AE%E6%A8%A1%E5%9E%8B"><span class="nav-number">3.</span> <span class="nav-text">zookeeper数据模型</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#zookeeper%E8%8A%82%E7%82%B9%E7%B1%BB%E5%9E%8B"><span class="nav-number">3.1.</span> <span class="nav-text">zookeeper节点类型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#zookeeper%E8%8A%82%E7%82%B9%E5%B1%9E%E6%80%A7"><span class="nav-number">3.2.</span> <span class="nav-text">zookeeper节点属性</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%AE%80%E5%8D%95%E7%9A%84zookeeper%E9%9B%86%E7%BE%A4%E5%B7%A5%E4%BD%9C%E6%B5%81%E7%A8%8B%E7%A4%BA%E4%BE%8B"><span class="nav-number">4.</span> <span class="nav-text">简单的zookeeper集群工作流程示例</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Java-zookeeper-api"><span class="nav-number">5.</span> <span class="nav-text">Java zookeeper api</span></a></li></ol></div>
+      </section>
+      <!--/noindex-->
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Stephen Jia</p>
+  <div class="site-description" itemprop="description">Try Everything......</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives">
+          <span class="site-state-item-count">41</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </section>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+      
+
+      
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://jiazx.top/2020/08/16/tool-2/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Stephen Jia">
+      <meta itemprop="description" content="Try Everything......">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="J Blog">
+    </span>
+
+    
+    
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          zookeeper
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-08-16 17:48:13 / 修改时间：17:49:49" itemprop="dateCreated datePublished" datetime="2020-08-16T17:48:13+08:00">2020-08-16</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <h1 id="zookeeper概述-amp-特性"><a href="#zookeeper概述-amp-特性" class="headerlink" title="zookeeper概述&amp;特性"></a>zookeeper概述&amp;特性</h1><ul>
+<li>zookeeper是一个分布式的协调服务的开源框架，解决分布式系统集群之间的一致性的问题。</li>
+<li>zookeeper本质是一个分布式的小的文件存储系统</li>
+</ul>
+<p>特性：</p>
+<ul>
+<li>全局数据一致性：最重要的特征，保证client连接每个集群中的server得到的结果都是一致的。</li>
+<li>可靠性：消息被一台server接受，则被所有的server接受。</li>
+<li>顺序性：server1上面有先执行a后执行b，其他所有server都是先执行a后执行b。</li>
+<li>数据更新原子性：要么同时成功，要么同时失败（半数以上成功即算成功）。</li>
+<li>实时性：保证客户端在一个时间间隔里面获得server的更新信息或者宕机信息。</li>
+</ul>
+<h1 id="zookeeper集群中的角色"><a href="#zookeeper集群中的角色" class="headerlink" title="zookeeper集群中的角色"></a>zookeeper集群中的角色</h1><p>zk中角色分为两种<br><strong>Leader、Follower</strong></p>
+<h2 id="Leader"><a href="#Leader" class="headerlink" title="Leader"></a>Leader</h2><p>leader是整个集群工作的核心，是事务请求(增删改)的唯一调度者。以及集群中各个服务器的调度者。</p>
+<h2 id="Follower"><a href="#Follower" class="headerlink" title="Follower"></a>Follower</h2><p>接受到事务请求不会直接拒绝而是转发给leader处理；参与集群的选举投票。</p>
+<h2 id="Watcher"><a href="#Watcher" class="headerlink" title="Watcher"></a>Watcher</h2><p>根据配置的监控规则监控节点内容的变化情况。</p>
+<h1 id="zookeeper数据模型"><a href="#zookeeper数据模型" class="headerlink" title="zookeeper数据模型"></a>zookeeper数据模型</h1><p>zk集群中的每个节点称为一个Znode<br>1.Znode兼具文件和目录两种特点。<br>2.Znode具有原子性操作。<br>3.Znode存储数据大小有限制，通常以kb为单位。<br>4.Znode通过路径引用，路径必须是绝对的。</p>
+<p>Znode包含三部分：<br>1.stat状态信息<br>2.data数据信息<br>3.children该节点下的子节点</p>
+<h2 id="zookeeper节点类型"><a href="#zookeeper节点类型" class="headerlink" title="zookeeper节点类型"></a>zookeeper节点类型</h2><p>1.临时节点：client断开连接即自动删除，临时节点不允许拥有子节点。<br>2.永久节点：</p>
+<h2 id="zookeeper节点属性"><a href="#zookeeper节点属性" class="headerlink" title="zookeeper节点属性"></a>zookeeper节点属性</h2><p>dataversion：数据版本号，每次对数据进行set操作，dataversion的值都会加1<br>cversion：znode的子节点有变化，那么znode的cversion加1，代表子节点变化的频繁程度。<br>cZxid：znode创建的事务id<br>mZxid：znode被修改的数据id<br>ctime：节点创建时的时间戳<br>mtime：节点最新一次更新的时间戳</p>
+<h1 id="简单的zookeeper集群工作流程示例"><a href="#简单的zookeeper集群工作流程示例" class="headerlink" title="简单的zookeeper集群工作流程示例"></a>简单的zookeeper集群工作流程示例</h1><p><img src="http://www.jiazx.top/upload/2020/06/image-56c6af2c60e3442aabb80ab1c90e3ec0.png" alt="image.png"></p>
+<p>1.在Client向Follwer发出一个写的请求</p>
+<p>2.Follwer把请求发送给Leader</p>
+<p>3.Leader接收到以后开始发起投票并通知Follwer进行投票</p>
+<p>4.Follwer把投票结果发送给Leader</p>
+<p>5.Leader将结果汇总后如果需要写入，则开始写入同时把写入操作通知给每一个Follower，然后commit;</p>
+<p>6.Follwer把请求结果返回给Client</p>
+<h1 id="Java-zookeeper-api"><a href="#Java-zookeeper-api" class="headerlink" title="Java zookeeper api"></a>Java zookeeper api</h1><p>引入pom依赖：<br><img src="http://www.jiazx.top/upload/2020/06/image-0e1f9f5602ac4a47831dfd175f5a39fc.png" alt="image.png"></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%B7%A5%E5%85%B7%E9%9B%86/" rel="tag"># 工具集</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2020/08/16/tool-1/" rel="prev" title="jenkins工具">
+                  <i class="fa fa-chevron-left"></i> jenkins工具
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2020/08/16/tool-3/" rel="next" title="初识dubbo">
+                  初识dubbo <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+      
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      const activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      const commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      
+
+      
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Stephen Jia</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="//cdn.jsdelivr.net/npm/animejs@3.2.0/lib/anime.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

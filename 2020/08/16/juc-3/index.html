@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.0.2">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.14.0/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css">
+
+<script class="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"jiazx.top","root":"/","scheme":"Muse","version":"8.0.0-rc.5","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false};
+  </script>
+
+  <meta name="description" content="一、AQS并发工具类1.CountDownLatch：倒计时门栓应用场景：  A synchronization aid that allows one or more threads to wait until   a set of operations being performed in other threads completes.（大意就是：可以控制一个或者多个特定的线程在若干个线程执">
+<meta property="og:type" content="article">
+<meta property="og:title" content="JUC学习笔记三：AQS并发工具类；读写锁；阻塞队列">
+<meta property="og:url" content="http://jiazx.top/2020/08/16/juc-3/index.html">
+<meta property="og:site_name" content="J Blog">
+<meta property="og:description" content="一、AQS并发工具类1.CountDownLatch：倒计时门栓应用场景：  A synchronization aid that allows one or more threads to wait until   a set of operations being performed in other threads completes.（大意就是：可以控制一个或者多个特定的线程在若干个线程执">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200206221741182.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzMxMzE0MTQx,size_16,color_FFFFFF,t_70">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200206222226278.png">
+<meta property="article:published_time" content="2020-08-16T09:09:22.000Z">
+<meta property="article:modified_time" content="2020-08-16T09:17:11.185Z">
+<meta property="article:author" content="Stephen Jia">
+<meta property="article:tag" content="java多线程">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://img-blog.csdnimg.cn/20200206221741182.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzMxMzE0MTQx,size_16,color_FFFFFF,t_70">
+
+
+<link rel="canonical" href="http://jiazx.top/2020/08/16/juc-3/">
+
+
+<script class="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>JUC学习笔记三：AQS并发工具类；读写锁；阻塞队列 | J Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header {
+    visibility: visible;
+  }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">J Blog</h1>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <section class="post-toc-wrap sidebar-panel">
+          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%80%E3%80%81AQS%E5%B9%B6%E5%8F%91%E5%B7%A5%E5%85%B7%E7%B1%BB"><span class="nav-number">1.</span> <span class="nav-text">一、AQS并发工具类</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-CountDownLatch%EF%BC%9A%E5%80%92%E8%AE%A1%E6%97%B6%E9%97%A8%E6%A0%93"><span class="nav-number">1.1.</span> <span class="nav-text">1.CountDownLatch：倒计时门栓</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF%EF%BC%9A"><span class="nav-number">1.1.1.</span> <span class="nav-text">应用场景：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BE%E4%BE%8B%EF%BC%9A"><span class="nav-number">1.1.2.</span> <span class="nav-text">举例：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8E%9F%E7%90%86%EF%BC%9A"><span class="nav-number">1.1.3.</span> <span class="nav-text">原理：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%BB%E7%BB%93%EF%BC%9A"><span class="nav-number">1.1.4.</span> <span class="nav-text">总结：</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-CyclicBarrier%EF%BC%9A%E5%BE%AA%E7%8E%AF%E9%9A%9C%E7%A2%8D"><span class="nav-number">1.2.</span> <span class="nav-text">2.CyclicBarrier：循环障碍</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF%EF%BC%9A-1"><span class="nav-number">1.2.1.</span> <span class="nav-text">应用场景：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BE%E4%BE%8B%EF%BC%9A-1"><span class="nav-number">1.2.2.</span> <span class="nav-text">举例：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8E%9F%E7%90%86%EF%BC%9A-1"><span class="nav-number">1.2.3.</span> <span class="nav-text">原理：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%BB%E7%BB%93%EF%BC%9A-1"><span class="nav-number">1.2.4.</span> <span class="nav-text">总结：</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-Semaphore"><span class="nav-number">1.3.</span> <span class="nav-text">3.Semaphore:</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BA%94%E7%94%A8%E5%9C%BA%E6%99%AF%EF%BC%9A-2"><span class="nav-number">1.3.1.</span> <span class="nav-text">应用场景：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BE%E4%BE%8B-%EF%BC%9A"><span class="nav-number">1.3.2.</span> <span class="nav-text">举例 ：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8E%9F%E7%90%86%EF%BC%9A-2"><span class="nav-number">1.3.3.</span> <span class="nav-text">原理：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">1.3.4.</span> <span class="nav-text">总结</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BA%8C%E3%80%81%E8%AF%BB%E5%86%99%E9%94%81-ReadWriteLock"><span class="nav-number">2.</span> <span class="nav-text">二、读写锁  ReadWriteLock</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%89%B9%E7%82%B9%EF%BC%9A"><span class="nav-number">2.0.1.</span> <span class="nav-text">特点：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BE%E4%BE%8B%EF%BC%9A-2"><span class="nav-number">2.0.2.</span> <span class="nav-text">举例：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%80%BB%E7%BB%93%EF%BC%9A-2"><span class="nav-number">2.0.3.</span> <span class="nav-text">总结：</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%89%E3%80%81%E9%98%BB%E5%A1%9E%E9%98%9F%E5%88%97BlockingQueue"><span class="nav-number">3.</span> <span class="nav-text">三、阻塞队列BlockingQueue</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%98%BB%E5%A1%9E%E9%98%9F%E5%88%97%E7%9A%84%E6%A6%82%E5%BF%B5%EF%BC%9A"><span class="nav-number">3.0.1.</span> <span class="nav-text">阻塞队列的概念：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#BlockingQueue%E7%9A%84%E7%BB%A7%E6%89%BF%E5%85%B3%E7%B3%BB%EF%BC%9A"><span class="nav-number">3.0.2.</span> <span class="nav-text">BlockingQueue的继承关系：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#BlockingQueue%E6%8E%A5%E5%8F%A3%E7%9A%84%E4%B8%BB%E8%A6%81%E5%AE%9E%E7%8E%B0%E7%B1%BB%EF%BC%9A"><span class="nav-number">3.0.3.</span> <span class="nav-text">BlockingQueue接口的主要实现类：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%98%BB%E5%A1%9E%E9%98%9F%E5%88%97%E7%9A%84%E5%85%A5%E9%98%9F%EF%BC%8C%E5%87%BA%E9%98%9F%EF%BC%8Cpeek%E6%96%B9%E6%B3%95%EF%BC%9A"><span class="nav-number">3.0.4.</span> <span class="nav-text">阻塞队列的入队，出队，peek方法：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%BE%E4%BE%8B%EF%BC%9A-3"><span class="nav-number">3.0.5.</span> <span class="nav-text">举例：</span></a></li></ol></li></ol></li></ol></div>
+      </section>
+      <!--/noindex-->
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Stephen Jia</p>
+  <div class="site-description" itemprop="description">Try Everything......</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives">
+          <span class="site-state-item-count">41</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </section>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+      
+
+      
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://jiazx.top/2020/08/16/juc-3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Stephen Jia">
+      <meta itemprop="description" content="Try Everything......">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="J Blog">
+    </span>
+
+    
+    
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          JUC学习笔记三：AQS并发工具类；读写锁；阻塞队列
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-08-16 17:09:22 / 修改时间：17:17:11" itemprop="dateCreated datePublished" datetime="2020-08-16T17:09:22+08:00">2020-08-16</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <h1 id="一、AQS并发工具类"><a href="#一、AQS并发工具类" class="headerlink" title="一、AQS并发工具类"></a>一、AQS并发工具类</h1><h2 id="1-CountDownLatch：倒计时门栓"><a href="#1-CountDownLatch：倒计时门栓" class="headerlink" title="1.CountDownLatch：倒计时门栓"></a>1.CountDownLatch：倒计时门栓</h2><h3 id="应用场景："><a href="#应用场景：" class="headerlink" title="应用场景："></a>应用场景：</h3><p>  A synchronization aid that allows one or more threads to wait until<br>   a set of operations being performed in other threads completes.<br>（大意就是：可以控制一个或者多个特定的线程在若干个线程执行完毕之后才执行）        </p>
+<p>来个土味社会语录：先穿袜子再穿鞋，先当孙子再当爷~<br>这里的穿鞋，必须等到所有袜子穿好之后，才可以进行。同理，想成为大佬，假设必须经过一千次向大佬请教。那么想成为大佬就必须等到请教一千次大佬动作完成之后才能进行。 类似这种需求可以考虑使用CountDownLatch实现</p>
+<p>CountDownLatch的构造器： 参数为计数器的初始值</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">CountDownLatch</span><span class="params">(<span class="keyword">int</span> count)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (count &lt; <span class="number">0</span>) <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException(<span class="string">&quot;count &lt; 0&quot;</span>);</span><br><span class="line">        <span class="keyword">this</span>.sync = <span class="keyword">new</span> Sync(count);</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<h3 id="举例："><a href="#举例：" class="headerlink" title="举例："></a>举例：</h3><p>  下面用穿袜子来举例，必须穿好两只袜子才可以穿鞋。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CountDownLatchDemo</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</span><br><span class="line">        CountDownLatch countDownLatch = <span class="keyword">new</span> CountDownLatch(<span class="number">2</span>);</span><br><span class="line">        ExecutorService service = Executors.newCachedThreadPool();</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">2</span>; i++) &#123;</span><br><span class="line">            service.execute(() -&gt; &#123;</span><br><span class="line">                System.out.println(Thread.currentThread().getName() + <span class="string">&quot;\t穿上了一只袜子&quot;</span>);</span><br><span class="line">                countDownLatch.countDown();<span class="comment">//计数器减一，减到零之后,调用了await()方法而在等待的线程就会被唤醒。</span></span><br><span class="line">            &#125;);</span><br><span class="line">        &#125;</span><br><span class="line">        countDownLatch.await();</span><br><span class="line">        System.out.println(Thread.currentThread().getName()+<span class="string">&quot;\t穿鞋&quot;</span>);</span><br><span class="line"></span><br><span class="line">        service.shutdown();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>运行结果：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">pool-<span class="number">1</span>-thread-<span class="number">1</span>    穿上了一只袜子</span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">2</span>    穿上了一只袜子</span><br><span class="line">main    穿鞋</span><br></pre></td></tr></table></figure>
+
+<p>若没有使用CountDownLatch，可能出现：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">main    穿鞋</span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">2</span>    穿上了一只袜子</span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">1</span>    穿上了一只袜子</span><br></pre></td></tr></table></figure>
+<p>或者：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">pool-<span class="number">1</span>-thread-<span class="number">1</span>    穿上了一只袜子</span><br><span class="line">main    穿鞋</span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">2</span>    穿上了一只袜子</span><br></pre></td></tr></table></figure>
+<p>这样先穿了鞋再穿袜子，明显错误。</p>
+<h3 id="原理："><a href="#原理：" class="headerlink" title="原理："></a>原理：</h3><p> 每次CountDownLatch对象的countDown()方法，就会使设定好的计数器的值减一（类似于倒计时），若设定好的计数器减到零（倒计时结束，await()的线程放行）：那么调用了CountDownLatch对象的await()方法的线程就会执行。    </p>
+<h3 id="总结："><a href="#总结：" class="headerlink" title="总结："></a>总结：</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//实例化方式</span></span><br><span class="line">CountDownLatch countDownLatch = <span class="keyword">new</span> CountDownLatch(<span class="keyword">int</span> count);</span><br><span class="line"><span class="comment">//主要方法</span></span><br><span class="line">countDownLatch.countDown();<span class="comment">//计数器count减一</span></span><br><span class="line">countDownLatch.await();<span class="comment">//线程等待，直到计数器count归零</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="2-CyclicBarrier：循环障碍"><a href="#2-CyclicBarrier：循环障碍" class="headerlink" title="2.CyclicBarrier：循环障碍"></a>2.CyclicBarrier：循环障碍</h2><h3 id="应用场景：-1"><a href="#应用场景：-1" class="headerlink" title="应用场景："></a>应用场景：</h3><p>A synchronization aid that allows a set of threads to all wait for each other to reach a common barrier point.  CyclicBarriers are useful in programs involving a fixed sized party of threads that must occasionally wait for each other. The barrier is called <em>cyclic</em> because it can be re-used after the waiting threads are released.  </p>
+<p>和CountDownLatch类似：也是一些线程要等待另一些线程执行完毕后，才能执行的场景。  </p>
+<p>与CountDownLatch不同的是：CyclicBarirer可以通过reset()方法再次循环使用，并不是像CountDownLatch一样用过就当垃圾丢掉的。 </p>
+<p>CyclicBarrier的构造器：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">CyclicBarrier</span><span class="params">(<span class="keyword">int</span> parties, Runnable barrierAction)</span></span></span><br><span class="line"><span class="function"><span class="comment">//parties:the number of threads that must invoke &#123;@link #await&#125; before the barrier is tripped(在障碍物消失之前，必须执行的线程的个数，即执行第二个参数中的线程之前必须执行的线程的数量)</span></span></span><br><span class="line"><span class="function"><span class="comment">//the command to execute when the barrier is tripped（障碍物消失之后，要执行的命令）</span></span></span><br></pre></td></tr></table></figure>
+
+<h3 id="举例：-1"><a href="#举例：-1" class="headerlink" title="举例："></a>举例：</h3><p>葫芦娃合体，必须等七个葫芦娃全都准备就绪才可以合体</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">CyclicBarrierDemo</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        ExecutorService service = Executors.newCachedThreadPool();</span><br><span class="line">        CyclicBarrier cyclicBarrier = <span class="keyword">new</span> CyclicBarrier(<span class="number">7</span>, () -&gt; &#123;</span><br><span class="line">            System.out.println(<span class="string">&quot;葫芦娃合体！&quot;</span>);</span><br><span class="line">        &#125;);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">1</span>; i &lt;=<span class="number">7</span> ; i++) &#123;</span><br><span class="line">            <span class="keyword">final</span> <span class="keyword">int</span> temp = i;</span><br><span class="line">            service.execute(() -&gt; &#123;</span><br><span class="line">                System.out.println(Thread.currentThread().getName()+<span class="string">&quot;\t&quot;</span>+temp+<span class="string">&quot;娃来了，准备合体&quot;</span>);</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    cyclicBarrier.await();</span><br><span class="line">                &#125; <span class="keyword">catch</span> (InterruptedException | BrokenBarrierException e) &#123;</span><br><span class="line">                    e.printStackTrace();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;);</span><br><span class="line">        &#125;</span><br><span class="line">        service.shutdown();</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>运行结果：  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">pool-<span class="number">1</span>-thread-<span class="number">1</span>    <span class="number">1</span>娃来了，准备合体</span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">5</span>    <span class="number">5</span>娃来了，准备合体</span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">2</span>    <span class="number">2</span>娃来了，准备合体</span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">4</span>    <span class="number">4</span>娃来了，准备合体</span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">3</span>    <span class="number">3</span>娃来了，准备合体</span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">7</span>    <span class="number">7</span>娃来了，准备合体</span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">6</span>    <span class="number">6</span>娃来了，准备合体</span><br><span class="line">葫芦娃合体！</span><br></pre></td></tr></table></figure>
+<h3 id="原理：-1"><a href="#原理：-1" class="headerlink" title="原理："></a>原理：</h3><p>同样通过计数器来计算执行过的线程数，只不过每次变为加1而不是减1。每调用一次CyclicBarrier对象的await()方法，标示着一个线程到达了屏障，计数器加一。<br>当计数器的值等于入参中的parties的值时，barrierAction会执行一次。</p>
+<h3 id="总结：-1"><a href="#总结：-1" class="headerlink" title="总结："></a>总结：</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//实例化方式</span></span><br><span class="line">CyclicBarrier cyclicBarrier = <span class="keyword">new</span> CyclicBarrier(<span class="keyword">int</span> parties, Runnable barrierAction);</span><br><span class="line"><span class="comment">//主要方法</span></span><br><span class="line">cyclicBarrier.await();<span class="comment">//计数器加一，计数器的值等于parties时，barrierAction执行</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="3-Semaphore"><a href="#3-Semaphore" class="headerlink" title="3.Semaphore:"></a>3.Semaphore:</h2><h3 id="应用场景：-2"><a href="#应用场景：-2" class="headerlink" title="应用场景："></a>应用场景：</h3><p> A counting semaphore.  Conceptually, a semaphore maintains a set of permits.  Each {@link #acquire} blocks if necessary until a permit is<br>available, and then takes it.  Each {@link #release} adds a permit,<br> potentially releasing a blocking acquirer.<br>However, no actual permit objects are used; the {@code Semaphore} just keeps a count of the number available and acts accordingly.  </p>
+<p>如果有些资源数量是有限的，但是需要这个资源的线程数量比资源数量多，那么为了资源的并发安全，我们可以使用Semaphore ，最多只允许等于资源数的线程数量进入，并且使用完资源可以释放使用权给其他线程（release），其他线程一旦进入就占领一个资源（acquire）  </p>
+<p>Semaphore的构造器：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">Semaphore</span><span class="params">(<span class="keyword">int</span> permits)</span> </span></span><br><span class="line"><span class="function"><span class="comment">//permits：最大资源数量的初始值，不能为负数</span></span></span><br></pre></td></tr></table></figure>
+
+<h3 id="举例-："><a href="#举例-：" class="headerlink" title="举例 ："></a>举例 ：</h3><p>这里用食堂抢桌子座位来模拟，食堂一个桌子有四个座位，十个人要吃饭。要保证一个座位一个人，不能有四个人以上同时吃饭，并且吃完释放座位给其他人用。  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SemaphoreDemo</span> </span>&#123;</span><br><span class="line">    <span class="comment">//多个线程抢多个资源</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        <span class="comment">//八个人食堂抢座位,最多四个人入座，不关心是谁</span></span><br><span class="line">        Semaphore semaphore = <span class="keyword">new</span> Semaphore(<span class="number">4</span>);</span><br><span class="line">        ExecutorService service = Executors.newCachedThreadPool();</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">10</span>; i++) &#123;</span><br><span class="line">            service.execute(() -&gt; &#123;</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    semaphore.acquire();<span class="comment">//perimit不为0时，才能进来，每进来一个线程permit减1</span></span><br><span class="line">                    System.out.println(Thread.currentThread().getName()+<span class="string">&quot;抢到了一个座位&quot;</span>);</span><br><span class="line">                    <span class="comment">//暂停一会线程以便观察</span></span><br><span class="line">                    TimeUnit.SECONDS.sleep(<span class="number">1</span>);</span><br><span class="line">                    System.out.println(Thread.currentThread().getName()+<span class="string">&quot;吃完饭了，离开了座位&quot;</span>);</span><br><span class="line">                &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                    e.printStackTrace();</span><br><span class="line">                &#125;<span class="keyword">finally</span> &#123;</span><br><span class="line">                    <span class="comment">//吃完饭释放座位</span></span><br><span class="line">                    semaphore.release();<span class="comment">//每跑完一个线程permit加1</span></span><br><span class="line">                &#125;</span><br><span class="line">            &#125;);</span><br><span class="line">        &#125;</span><br><span class="line">        service.shutdown();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>运行结果：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">pool-<span class="number">1</span>-thread-<span class="number">1</span>抢到了一个座位</span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">2</span>抢到了一个座位</span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">3</span>抢到了一个座位</span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">4</span>抢到了一个座位</span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">2</span>吃完饭了，离开了座位</span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">3</span>吃完饭了，离开了座位</span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">1</span>吃完饭了，离开了座位</span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">4</span>吃完饭了，离开了座位</span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">9</span>抢到了一个座位</span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">10</span>抢到了一个座位</span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">6</span>抢到了一个座位</span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">5</span>抢到了一个座位</span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">9</span>吃完饭了，离开了座位</span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">5</span>吃完饭了，离开了座位</span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">10</span>吃完饭了，离开了座位</span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">6</span>吃完饭了，离开了座位</span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">8</span>抢到了一个座位</span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">7</span>抢到了一个座位</span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">7</span>吃完饭了，离开了座位</span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">8</span>吃完饭了，离开了座位</span><br></pre></td></tr></table></figure>
+
+<h3 id="原理：-2"><a href="#原理：-2" class="headerlink" title="原理："></a>原理：</h3><p>创建 Semaphore 对象的时候，需要一个参数 permits，这个permits代表最大的资源数，然后每个线程调用 acquire 的时候，执行 permits = permits - 1，release 的时候执行 permits = permits + 1，当然，acquire 的时候，如果 permits = 0，说明没有资源了，需要等待其他线程 release。</p>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//实例化方式</span></span><br><span class="line">Semaphore semaphore = <span class="keyword">new</span> semaphore(<span class="keyword">int</span> permits);</span><br><span class="line"><span class="comment">//主要方法</span></span><br><span class="line">semaphore.aquire();    <span class="comment">//permit不为零的情况下，占领一个资源,permit-1</span></span><br><span class="line">semaphore.release();<span class="comment">//释放一个资源,permit+1</span></span><br></pre></td></tr></table></figure>
+
+<p>​    </p>
+<h1 id="二、读写锁-ReadWriteLock"><a href="#二、读写锁-ReadWriteLock" class="headerlink" title="二、读写锁  ReadWriteLock"></a>二、读写锁  ReadWriteLock</h1><h3 id="特点："><a href="#特点：" class="headerlink" title="特点："></a>特点：</h3><p>读写锁的特点是给读写操作的线程进行定制化处理，给每一个写操作的线程赋予唯一一把write锁。但是对只读操作的read锁可以由多个线程获得。</p>
+<h3 id="举例：-2"><a href="#举例：-2" class="headerlink" title="举例："></a>举例：</h3><p>5个线程负责向一个map写入数据，另外五个线程负责从map读数据：  </p>
+<p>给读方法内加上read锁，给写方法内加上write锁。 </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ReadWriteLockDemo</span> </span>&#123;</span><br><span class="line">    <span class="comment">//5个写线程，5个读线程</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        CacheMethods cacheMethods = <span class="keyword">new</span> CacheMethods();</span><br><span class="line">        ExecutorService service = Executors.newCachedThreadPool();</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">5</span>; i++) &#123;</span><br><span class="line">            <span class="keyword">final</span> <span class="keyword">int</span> temp = i;</span><br><span class="line">            service.execute(() -&gt; &#123;</span><br><span class="line">                cacheMethods.write(temp+<span class="string">&quot;&quot;</span>, temp+<span class="string">&quot;&quot;</span>);</span><br><span class="line">            &#125;);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">5</span>; i++) &#123;</span><br><span class="line">            <span class="keyword">final</span> <span class="keyword">int</span> temp = i;</span><br><span class="line">            service.execute(() -&gt; &#123;</span><br><span class="line">                cacheMethods.read(temp+<span class="string">&quot;&quot;</span>);</span><br><span class="line">            &#125;);</span><br><span class="line">        &#125;</span><br><span class="line">        service.shutdown();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">CacheMethods</span></span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">volatile</span> Map&lt;String, Object&gt; map = <span class="keyword">new</span> HashMap&lt;&gt;();</span><br><span class="line">    <span class="keyword">private</span> ReadWriteLock readWriteLock = <span class="keyword">new</span> ReentrantReadWriteLock();</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">write</span><span class="params">(String key, Object value)</span></span>&#123;</span><br><span class="line">        readWriteLock.writeLock().lock();</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            System.out.println(Thread.currentThread().getName()+<span class="string">&quot; : 写入数据 : &quot;</span>+key);</span><br><span class="line">            <span class="comment">//模拟网路延迟写入数据暂停一会</span></span><br><span class="line">            TimeUnit.MILLISECONDS.sleep(<span class="number">300</span>);</span><br><span class="line">            map.put(key, value);</span><br><span class="line">            System.out.println(Thread.currentThread().getName()+<span class="string">&quot; : 写入完成&quot;</span>);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;<span class="keyword">finally</span> &#123;</span><br><span class="line">            readWriteLock.writeLock().unlock();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">read</span><span class="params">(String key)</span></span>&#123;</span><br><span class="line">        readWriteLock.readLock().lock();</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            System.out.println(Thread.currentThread().getName()+<span class="string">&quot; : 读取数据&quot;</span>);</span><br><span class="line">            <span class="comment">//模拟网路延迟读取数据暂停一会</span></span><br><span class="line">            TimeUnit.MILLISECONDS.sleep(<span class="number">300</span>);</span><br><span class="line">            Object result = map.get(key);</span><br><span class="line">            System.out.println(Thread.currentThread().getName()+<span class="string">&quot; : 读取完成 : &quot;</span> + result);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;<span class="keyword">finally</span> &#123;</span><br><span class="line">            readWriteLock.readLock().unlock();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>运行结果：  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">pool-<span class="number">1</span>-thread-<span class="number">1</span> : 写入数据 : <span class="number">0</span></span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">1</span> : 写入完成</span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">3</span> : 写入数据 : <span class="number">2</span></span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">3</span> : 写入完成</span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">2</span> : 写入数据 : <span class="number">1</span></span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">2</span> : 写入完成</span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">4</span> : 写入数据 : <span class="number">3</span></span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">4</span> : 写入完成</span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">5</span> : 写入数据 : <span class="number">4</span></span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">5</span> : 写入完成</span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">6</span> : 读取数据</span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">7</span> : 读取数据</span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">8</span> : 读取数据</span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">9</span> : 读取数据</span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">10</span> : 读取数据</span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">9</span> : 读取完成 : <span class="number">3</span></span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">10</span> : 读取完成 : <span class="number">4</span></span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">6</span> : 读取完成 : <span class="number">0</span></span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">7</span> : 读取完成 : <span class="number">1</span></span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">8</span> : 读取完成 : <span class="number">2</span></span><br></pre></td></tr></table></figure>
+<p>可以看出，写操作在进行的时候，其他的写操作并没有进来。读写锁实现了并发下读写分离的定制化处理。  </p>
+<h3 id="总结：-2"><a href="#总结：-2" class="headerlink" title="总结："></a>总结：</h3><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//实例化方法</span></span><br><span class="line">ReadWriteLock readWriteLock = <span class="keyword">new</span> ReentrantReadWriteLock();</span><br><span class="line"><span class="comment">//读操作的加锁和释放</span></span><br><span class="line">readWriteLock.writeLock().lock();</span><br><span class="line">readWriteLock.writeLock().unlock();</span><br><span class="line"></span><br><span class="line"><span class="comment">//写操作的加锁和释放</span></span><br><span class="line">readWriteLock.readLcok().lock();</span><br><span class="line">readWriteLock.readLcok().unlock();</span><br></pre></td></tr></table></figure>
+
+<h1 id="三、阻塞队列BlockingQueue"><a href="#三、阻塞队列BlockingQueue" class="headerlink" title="三、阻塞队列BlockingQueue"></a>三、阻塞队列BlockingQueue</h1><h3 id="阻塞队列的概念："><a href="#阻塞队列的概念：" class="headerlink" title="阻塞队列的概念："></a>阻塞队列的概念：</h3><p>所谓阻塞队列，其实本身就是数据结构概念中的队列，遵循先入队的元素先出队。所谓阻塞，就是如果队列是有界的，那么在队列元素已满时，入队操作将会被阻塞；同理，在队列中没有任何元素时，出队操作将会被阻塞。 </p>
+<h3 id="BlockingQueue的继承关系："><a href="#BlockingQueue的继承关系：" class="headerlink" title="BlockingQueue的继承关系："></a>BlockingQueue的继承关系：</h3><p><img src="https://img-blog.csdnimg.cn/20200206221741182.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzMxMzE0MTQx,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
+<h3 id="BlockingQueue接口的主要实现类："><a href="#BlockingQueue接口的主要实现类：" class="headerlink" title="BlockingQueue接口的主要实现类："></a>BlockingQueue接口的主要实现类：</h3><ul>
+<li><p>ArrayBlockingQueue ：底层是数组，有界队列，如果我们要使用生产者-消费者模式，这是非常好的选择。</p>
+</li>
+<li><p>LinkedBlockingQueue ：底层是链表，可以当做无界和有界队列来使用，所以大家不要以为它就是无界队列。</p>
+</li>
+<li><p>SynchronousQueue ：本身不带有空间来存储任何元素，使用上可以选择公平模式和非公平模式。</p>
+</li>
+<li><p>PriorityBlockingQueue： 是无界队列，基于数组，数据结构为二叉堆，数组第一个也是树的根节点总是最小值。</p>
+</li>
+</ul>
+<h3 id="阻塞队列的入队，出队，peek方法："><a href="#阻塞队列的入队，出队，peek方法：" class="headerlink" title="阻塞队列的入队，出队，peek方法："></a>阻塞队列的入队，出队，peek方法：</h3><p>具体方法可见如下表格：<br><img src="https://img-blog.csdnimg.cn/20200206222226278.png" alt="在这里插入图片描述"></p>
+<ul>
+<li>Throws exception：假设指定了阻塞队列的size(),若add()超过size数量的元素，会直接报<code>java.lang.IllegalStateException: Queue full</code> 。同理，若队列无元素时调用了remove()，会报<code>java.util.NoSuchElementException </code>的错误，调用element()，会报<code>java.util.NoSuchElementException</code>。 </li>
+</ul>
+<ul>
+<li><p>Special value：同理，若执行上面描述中会报错的行为，这里的方法不会报异常，而会返回特定的值：offer返回true或者false；poll返回出队的元素或者null，peek返回队列最先一个能出队的元素或者null.  </p>
+</li>
+<li><p>Blocks：是实现了真正的阻塞队列的概念，在队列元素已满时，入队操作将会被阻塞；同理，在队列中没有任何元素时，出队操作将会被阻塞。不会返回任何值，程序会等待其他操作来结束阻塞状态。所以所有方法当中比较重要的是【put()，take()】这两个方法。  </p>
+</li>
+<li><p>Times out：阻塞等待此操作，直到成功或者超时指定时间。时间到达后返回的类型规则同Special value。 </p>
+</li>
+</ul>
+<h3 id="举例：-3"><a href="#举例：-3" class="headerlink" title="举例："></a>举例：</h3><p>下面贴一个小的demo来验证，方法太多结果就不一一贴了，在每个方法的注释处有运行的结果：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BlockQueueDemo</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</span><br><span class="line">    <span class="comment">//指定队列的容量为3</span></span><br><span class="line">        BlockingQueue&lt;String&gt; blockingQueue  = <span class="keyword">new</span> ArrayBlockingQueue&lt;&gt;(<span class="number">3</span>);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">//        System.out.println(blockingQueue.add(&quot;a&quot;));</span></span><br><span class="line"><span class="comment">//        System.out.println(blockingQueue.add(&quot;b&quot;));</span></span><br><span class="line"><span class="comment">//        System.out.println(blockingQueue.add(&quot;c&quot;));</span></span><br><span class="line"><span class="comment">////        System.out.println(blockingQueue.add(&quot;d&quot;));//java.lang.IllegalStateException: Queue full</span></span><br><span class="line"><span class="comment">//</span></span><br><span class="line"><span class="comment">//        System.out.println(blockingQueue.remove());//a</span></span><br><span class="line"><span class="comment">//        System.out.println(blockingQueue.remove());//b</span></span><br><span class="line"><span class="comment">//        System.out.println(blockingQueue.remove());//c</span></span><br><span class="line"><span class="comment">////        System.out.println(blockingQueue.remove());//java.util.NoSuchElementException</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">//        System.out.println(blockingQueue.add(&quot;a&quot;));</span></span><br><span class="line"><span class="comment">//        System.out.println(blockingQueue.add(&quot;b&quot;));</span></span><br><span class="line"><span class="comment">//        System.out.println(blockingQueue.element());//a,取队列能最先出队的元素，相当于数据结构队列中的peek</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">//        System.out.println(blockingQueue.offer(&quot;a&quot;));</span></span><br><span class="line"><span class="comment">//        System.out.println(blockingQueue.offer(&quot;b&quot;));</span></span><br><span class="line"><span class="comment">//        System.out.println(blockingQueue.offer(&quot;c&quot;));</span></span><br><span class="line"><span class="comment">//        System.out.println(blockingQueue.offer(&quot;d&quot;));//不报异常，但是返回false</span></span><br><span class="line"><span class="comment">////</span></span><br><span class="line"><span class="comment">//        System.out.println(blockingQueue.poll());//a</span></span><br><span class="line"><span class="comment">//        System.out.println(blockingQueue.poll());//b</span></span><br><span class="line"><span class="comment">//        System.out.println(blockingQueue.poll());//c</span></span><br><span class="line"><span class="comment">//        System.out.println(blockingQueue.poll());//null</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">        blockingQueue.put(<span class="string">&quot;a&quot;</span>);</span><br><span class="line">        blockingQueue.put(<span class="string">&quot;a&quot;</span>);</span><br><span class="line">        blockingQueue.put(<span class="string">&quot;a&quot;</span>);</span><br><span class="line">        blockingQueue.put(<span class="string">&quot;a&quot;</span>);<span class="comment">//一直等待入队，被阻塞。不报异常，也没有返回值</span></span><br><span class="line"></span><br><span class="line">        System.out.println(blockingQueue.take());</span><br><span class="line">        System.out.println(blockingQueue.take());</span><br><span class="line">        System.out.println(blockingQueue.take());</span><br><span class="line">        System.out.println(blockingQueue.take());<span class="comment">//一直等待出队，被阻塞。不报异常，也没有返回值</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">//        System.out.println(blockingQueue.offer(&quot;a&quot;));</span></span><br><span class="line"><span class="comment">//        System.out.println(blockingQueue.offer(&quot;b&quot;));</span></span><br><span class="line"><span class="comment">//        System.out.println(blockingQueue.offer(&quot;c&quot;));</span></span><br><span class="line"><span class="comment">//        System.out.println(blockingQueue.offer(&quot;a&quot;, 3L, TimeUnit.SECONDS));//3秒后输出false</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/java%E5%A4%9A%E7%BA%BF%E7%A8%8B/" rel="tag"># java多线程</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2020/08/16/juc-2/" rel="prev" title="JUC学习笔记二：线程间的通信；同步方法锁的理解；juc集合类简介">
+                  <i class="fa fa-chevron-left"></i> JUC学习笔记二：线程间的通信；同步方法锁的理解；juc集合类简介
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2020/08/16/juc-4/" rel="next" title="JUC学习笔记四：ThreadPool线程池">
+                  JUC学习笔记四：ThreadPool线程池 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+      
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      const activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      const commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      
+
+      
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Stephen Jia</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="//cdn.jsdelivr.net/npm/animejs@3.2.0/lib/anime.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

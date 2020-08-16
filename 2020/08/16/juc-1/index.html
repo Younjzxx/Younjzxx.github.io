@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.0.2">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.14.0/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css">
+
+<script class="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"jiazx.top","root":"/","scheme":"Muse","version":"8.0.0-rc.5","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false};
+  </script>
+
+  <meta name="description" content="高内聚，低耦合所谓高内聚，低耦合就是每个程序要实现的特定功能要尽量多的在自己的内部完成，对外部提供很少量的接口以便调用。 并行和并发并行即多个任务在自己的分配的各自的资源上执行，即多个任务同时跑，互不冲突。并发即多个任务在统一的一个资源内执行，多个任务会抢占同一资源，在cpu中体现为交替执行，并不能同时执行，但是cpu在多个线程中切换的速度会非常快，所以宏观上看似是同时的。最大的区别体现在【同时】">
+<meta property="og:type" content="article">
+<meta property="og:title" content="JUC学习笔记一：复习多线程操作资源类的方法">
+<meta property="og:url" content="http://jiazx.top/2020/08/16/juc-1/index.html">
+<meta property="og:site_name" content="J Blog">
+<meta property="og:description" content="高内聚，低耦合所谓高内聚，低耦合就是每个程序要实现的特定功能要尽量多的在自己的内部完成，对外部提供很少量的接口以便调用。 并行和并发并行即多个任务在自己的分配的各自的资源上执行，即多个任务同时跑，互不冲突。并发即多个任务在统一的一个资源内执行，多个任务会抢占同一资源，在cpu中体现为交替执行，并不能同时执行，但是cpu在多个线程中切换的速度会非常快，所以宏观上看似是同时的。最大的区别体现在【同时】">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://imgconvert.csdnimg.cn/aHR0cHM6Ly91cGxvYWQtaW1hZ2VzLmppYW5zaHUuaW8vdXBsb2FkX2ltYWdlcy83NTU3MzczLTcyOTEyZWE4ZTg5YzQwMDcuanBn?x-oss-process=image/format,png">
+<meta property="og:image" content="https://imgconvert.csdnimg.cn/aHR0cHM6Ly91cGxvYWQtaW1hZ2VzLmppYW5zaHUuaW8vdXBsb2FkX2ltYWdlcy83NTU3MzczLWRhNjRmZmQ2ZDFlZmZhYWMuanBn?x-oss-process=image/format,png">
+<meta property="og:image" content="https://imgconvert.csdnimg.cn/aHR0cHM6Ly9jYW1vLmdpdGh1YnVzZXJjb250ZW50LmNvbS9iMDJiNjU0Mzk3YjE3YTE5OWFhMDI3MjdiNmVkNjVkZjBkZDRlZTE5LzY4NzQ3NDcwNzMzYTJmMmY2OTZkNjcyZDYyNmM2ZjY3MmU2MzczNjQ2ZTY5NmQ2NzJlNjM2ZTJmMzIzMDMxMzgzMTMwMzMzMTMxMzAzNTM2MzIzNzM0MzMzNzJlNzA2ZTY3M2Y3ODJkNmY3MzczMmQ3MDcyNmY2MzY1NzM3MzNkNjk2ZDYxNjc2NTJmNzc2MTc0NjU3MjZkNjE3MjZiMmM3NDc5NzA2NTVmNWE2ZDQ2NzU1YTMzNzA2ZjVhNTczNTZlNjE0NzU2NzA2NDQ3NmIyYzczNjg2MTY0NmY3NzVmMzEzMDJjNzQ2NTc4NzQ1ZjYxNDg1MjMwNjM0ODRkMzY0Yzc5Mzk2OTYyNDczOTZlNGM2ZDRlN2E1YTQ3MzQ3NTYyNmQ1NjMwNGMzMzcwNmY2MjMzNTUzNTRkNmE0MTMzNGY0NDU5N2E0ZDU0NDkzZDJjNzM2OTdhNjU1ZjMxMzYyYzYzNmY2YzZmNzI1ZjQ2NDY0NjQ2NDY0NjJjNzQ1ZjM3MzA?x-oss-process=image/format,png">
+<meta property="article:published_time" content="2020-08-16T09:08:07.000Z">
+<meta property="article:modified_time" content="2020-08-16T09:08:54.334Z">
+<meta property="article:author" content="Stephen Jia">
+<meta property="article:tag" content="java多线程">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://imgconvert.csdnimg.cn/aHR0cHM6Ly91cGxvYWQtaW1hZ2VzLmppYW5zaHUuaW8vdXBsb2FkX2ltYWdlcy83NTU3MzczLTcyOTEyZWE4ZTg5YzQwMDcuanBn?x-oss-process=image/format,png">
+
+
+<link rel="canonical" href="http://jiazx.top/2020/08/16/juc-1/">
+
+
+<script class="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>JUC学习笔记一：复习多线程操作资源类的方法 | J Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header {
+    visibility: visible;
+  }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">J Blog</h1>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <section class="post-toc-wrap sidebar-panel">
+          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%AB%98%E5%86%85%E8%81%9A%EF%BC%8C%E4%BD%8E%E8%80%A6%E5%90%88"><span class="nav-number">1.</span> <span class="nav-text">高内聚，低耦合</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%B9%B6%E8%A1%8C%E5%92%8C%E5%B9%B6%E5%8F%91"><span class="nav-number">2.</span> <span class="nav-text">并行和并发</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%A4%8D%E4%B9%A0%E5%A4%9A%E7%BA%BF%E7%A8%8B%E5%88%9B%E5%BB%BA%E7%9A%84%E5%9B%9B%E7%A7%8D%E6%96%B9%E5%BC%8F"><span class="nav-number">3.</span> <span class="nav-text">复习多线程创建的四种方式</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E5%88%9B%E5%BB%BA%E7%BA%BF%E7%A8%8B%E7%9A%84%E6%96%B9%E5%BC%8F%E4%B8%80%EF%BC%9A%E7%BB%A7%E6%89%BFThread%E7%B1%BB%E7%9A%84%E6%96%B9%E5%BC%8F"><span class="nav-number">3.1.</span> <span class="nav-text">1.创建线程的方式一：继承Thread类的方式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E5%88%9B%E5%BB%BA%E7%BA%BF%E7%A8%8B%E7%9A%84%E6%96%B9%E5%BC%8F%E4%BA%8C%EF%BC%9A%E5%AE%9E%E7%8E%B0Runnable%E6%8E%A5%E5%8F%A3%E7%9A%84%E6%96%B9%E5%BC%8F"><span class="nav-number">3.2.</span> <span class="nav-text">2.创建线程的方式二：实现Runnable接口的方式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E5%88%9B%E5%BB%BA%E7%BA%BF%E7%A8%8B%E7%9A%84%E6%96%B9%E5%BC%8F%E4%B8%89%EF%BC%9A%E5%AE%9E%E7%8E%B0Callable%E6%8E%A5%E5%8F%A3%E7%9A%84%E6%96%B9%E5%BC%8F-%E2%80%94-jdk5-0%E6%96%B0%E5%A2%9E"><span class="nav-number">3.3.</span> <span class="nav-text">3.创建线程的方式三：实现Callable接口的方式 —- jdk5.0新增</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%9B%E5%BB%BA%E7%BA%BF%E7%A8%8B%E6%B1%A0%E7%9A%84%E6%96%B9%E5%BC%8F%E4%B9%8B%E5%9B%9B%EF%BC%9A%E5%88%9B%E5%BB%BA%E7%BA%BF%E7%A8%8B%E6%B1%A0Executor"><span class="nav-number">3.4.</span> <span class="nav-text">创建线程池的方式之四：创建线程池Executor</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%BA%BF%E7%A8%8B%E7%9A%84%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E5%92%8C%E4%BC%98%E5%85%88%E7%BA%A7"><span class="nav-number">4.</span> <span class="nav-text">线程的生命周期和优先级</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%BA%BF%E7%A8%8B%E7%9A%84%E5%90%8C%E6%AD%A5%E6%96%B9%E6%B3%95"><span class="nav-number">5.</span> <span class="nav-text">线程的同步方法</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%96%B9%E5%BC%8F%E4%B8%80%EF%BC%9A%E5%90%8C%E6%AD%A5%E4%BB%A3%E7%A0%81%E5%9D%97"><span class="nav-number">5.1.</span> <span class="nav-text">方式一：同步代码块</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%96%B9%E5%BC%8F%E4%BA%8C%EF%BC%9A%E5%A3%B0%E6%98%8E%E5%90%8C%E6%AD%A5%E6%96%B9%E6%B3%95"><span class="nav-number">5.2.</span> <span class="nav-text">方式二：声明同步方法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%96%B9%E5%BC%8F%E4%B8%89%EF%BC%9AJUC%E7%9A%84lock%E5%B7%A5%E5%85%B7"><span class="nav-number">5.3.</span> <span class="nav-text">方式三：JUC的lock工具</span></a></li></ol></li></ol></div>
+      </section>
+      <!--/noindex-->
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Stephen Jia</p>
+  <div class="site-description" itemprop="description">Try Everything......</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives">
+          <span class="site-state-item-count">41</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </section>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+      
+
+      
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://jiazx.top/2020/08/16/juc-1/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Stephen Jia">
+      <meta itemprop="description" content="Try Everything......">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="J Blog">
+    </span>
+
+    
+    
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          JUC学习笔记一：复习多线程操作资源类的方法
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-08-16 17:08:07 / 修改时间：17:08:54" itemprop="dateCreated datePublished" datetime="2020-08-16T17:08:07+08:00">2020-08-16</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <h1 id="高内聚，低耦合"><a href="#高内聚，低耦合" class="headerlink" title="高内聚，低耦合"></a>高内聚，低耦合</h1><p>所谓高内聚，低耦合就是每个程序要实现的特定功能要尽量多的在自己的内部完成，对外部提供很少量的接口以便调用。</p>
+<h1 id="并行和并发"><a href="#并行和并发" class="headerlink" title="并行和并发"></a>并行和并发</h1><p>并行即多个任务在自己的分配的各自的资源上执行，即多个任务同时跑，互不冲突。<br>并发即多个任务在统一的一个资源内执行，多个任务会抢占同一资源，在cpu中体现为交替执行，并不能同时执行，但是cpu在多个线程中切换的速度会非常快，所以宏观上看似是同时的。<br>最大的区别体现在【同时】上。<br>并行：<br><img src="https://imgconvert.csdnimg.cn/aHR0cHM6Ly91cGxvYWQtaW1hZ2VzLmppYW5zaHUuaW8vdXBsb2FkX2ltYWdlcy83NTU3MzczLTcyOTEyZWE4ZTg5YzQwMDcuanBn?x-oss-process=image/format,png" alt="并行"><br>并发：<br><img src="https://imgconvert.csdnimg.cn/aHR0cHM6Ly91cGxvYWQtaW1hZ2VzLmppYW5zaHUuaW8vdXBsb2FkX2ltYWdlcy83NTU3MzczLWRhNjRmZmQ2ZDFlZmZhYWMuanBn?x-oss-process=image/format,png" alt="并发"></p>
+<h1 id="复习多线程创建的四种方式"><a href="#复习多线程创建的四种方式" class="headerlink" title="复习多线程创建的四种方式"></a>复习多线程创建的四种方式</h1><h2 id="1-创建线程的方式一：继承Thread类的方式"><a href="#1-创建线程的方式一：继承Thread类的方式" class="headerlink" title="1.创建线程的方式一：继承Thread类的方式"></a>1.创建线程的方式一：继承Thread类的方式</h2><p>使用方法：</p>
+<ol>
+<li>创建一个继承于Thread类的子类</li>
+<li>重写Thread类的run() –&gt; 将此线程执行的操作声明在run()中</li>
+<li>创建Thread类的子类的对象</li>
+<li>通过此对象调用start()：①启动当前线程 ② 调用当前线程的run()<ul>
+<li>例子：利用包含main线程在内的三个线程分别遍历10以内所有偶数</li>
+</ul>
+</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//1.创建一个继承于thread类的子类</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyThread</span> <span class="keyword">extends</span> <span class="title">Thread</span></span>&#123;</span><br><span class="line">    <span class="comment">//2. 重写Thread类的run()方法</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="comment">//遍历10以内所有偶数</span></span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">10</span>; i++) &#123;</span><br><span class="line">            <span class="keyword">if</span>(i % <span class="number">2</span> == <span class="number">0</span>)&#123;</span><br><span class="line">                System.out.println(Thread.currentThread().getName() +<span class="string">&quot;:&quot;</span>+ i);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ThreadTest</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        <span class="comment">//3. 创建Thread类的子类的对象</span></span><br><span class="line">        MyThread t1 = <span class="keyword">new</span> MyThread();</span><br><span class="line"></span><br><span class="line">        <span class="comment">//4. 通过此对象调用start() 启动当前线程，调用当前线程的run()</span></span><br><span class="line">        <span class="comment">//注意的问题一：我们不能通过直接调用对象.run()启动线程</span></span><br><span class="line"><span class="comment">//        t1.run();</span></span><br><span class="line">        t1.start();</span><br><span class="line"></span><br><span class="line">        <span class="comment">//需要重新创建一个对象再start</span></span><br><span class="line">        MyThread t2 = <span class="keyword">new</span> MyThread();</span><br><span class="line">        t2.start();</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">        <span class="comment">//如下的操作仍然是在main线程中执行的</span></span><br><span class="line">        System.out.println(<span class="string">&quot;hello&quot;</span>);</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">10</span>; i++) &#123;</span><br><span class="line">            <span class="keyword">if</span>(i % <span class="number">2</span> == <span class="number">0</span>)&#123;</span><br><span class="line">                System.out.println(Thread.currentThread().getName() +<span class="string">&quot;:&quot;</span>+ i + <span class="string">&quot;********main()*********&quot;</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>运行结果（因为线程由操作系统和cpu调度，多次运行结果不同）：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">hello</span><br><span class="line">Thread-<span class="number">1</span>:<span class="number">0</span></span><br><span class="line">Thread-<span class="number">0</span>:<span class="number">0</span></span><br><span class="line">Thread-<span class="number">1</span>:<span class="number">2</span></span><br><span class="line">Thread-<span class="number">1</span>:<span class="number">4</span></span><br><span class="line">Thread-<span class="number">1</span>:<span class="number">6</span></span><br><span class="line">Thread-<span class="number">1</span>:<span class="number">8</span></span><br><span class="line">main:<span class="number">0</span>********main()*********</span><br><span class="line">Thread-<span class="number">0</span>:<span class="number">2</span></span><br><span class="line">main:<span class="number">2</span>********main()*********</span><br><span class="line">Thread-<span class="number">0</span>:<span class="number">4</span></span><br><span class="line">Thread-<span class="number">0</span>:<span class="number">6</span></span><br><span class="line">Thread-<span class="number">0</span>:<span class="number">8</span></span><br><span class="line">main:<span class="number">4</span>********main()*********</span><br><span class="line">main:<span class="number">6</span>********main()*********</span><br><span class="line">main:<span class="number">8</span>********main()*********</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="2-创建线程的方式二：实现Runnable接口的方式"><a href="#2-创建线程的方式二：实现Runnable接口的方式" class="headerlink" title="2.创建线程的方式二：实现Runnable接口的方式"></a>2.创建线程的方式二：实现Runnable接口的方式</h2><p>使用方法：</p>
+<ol>
+<li>创建一个实现了Runnable接口的类</li>
+<li>实现类去实现Runnable中的抽象方法：run()</li>
+<li>创建实现类的对象</li>
+<li>将此对象作为参数传递到Thread类的构造器中，创建Thread类的对象</li>
+<li>通过Thread类的对象调用start()，启动线程  </li>
+<li>实现Runnable和继承Thread方式的对比：<br>开发中：优先选择：实现Runnable接口的方式  </li>
+</ol>
+<p>原因：</p>
+<ol>
+<li>实现接口的方式没有类的单继承性的局限性<ol start="2">
+<li>实现的方式更适合来处理多个线程共享数据的情况。  </li>
+</ol>
+</li>
+</ol>
+<ul>
+<li>例子</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ThreadTest1</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        <span class="comment">//3. 创建实现类的对象</span></span><br><span class="line">        MThread m = <span class="keyword">new</span> MThread();</span><br><span class="line">        <span class="comment">//4. 将此对象作为参数传递到Thread类的构造器中，创建Thread类的对象</span></span><br><span class="line">        Thread thread1 = <span class="keyword">new</span> Thread(m,<span class="string">&quot;线程一&quot;</span>);</span><br><span class="line">        <span class="comment">//5. 通过Thread类的对象调用start()</span></span><br><span class="line">        thread1.start();</span><br><span class="line">        <span class="comment">//再启动一个线程，遍历10以内偶数</span></span><br><span class="line">        Thread thread2 = <span class="keyword">new</span> Thread(m,<span class="string">&quot;线程二&quot;</span>);</span><br><span class="line">        thread2.start();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//1. 创建一个实现了Runnable接口的类</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MThread</span> <span class="keyword">implements</span> <span class="title">Runnable</span></span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">//2. 实现类去实现Runnable中的抽象方法：run()</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">10</span>; i++) &#123;</span><br><span class="line">            <span class="keyword">if</span>(i % <span class="number">2</span> == <span class="number">0</span>)&#123;</span><br><span class="line">                System.out.println(Thread.currentThread().getName()+<span class="string">&quot;:&quot;</span>+i);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>运行结果：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">线程二:<span class="number">0</span></span><br><span class="line">线程二:<span class="number">2</span></span><br><span class="line">线程二:<span class="number">4</span></span><br><span class="line">线程二:<span class="number">6</span></span><br><span class="line">线程一:<span class="number">0</span></span><br><span class="line">线程二:<span class="number">8</span></span><br><span class="line">线程一:<span class="number">2</span></span><br><span class="line">线程一:<span class="number">4</span></span><br><span class="line">线程一:<span class="number">6</span></span><br><span class="line">线程一:<span class="number">8</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="3-创建线程的方式三：实现Callable接口的方式-—-jdk5-0新增"><a href="#3-创建线程的方式三：实现Callable接口的方式-—-jdk5-0新增" class="headerlink" title="3.创建线程的方式三：实现Callable接口的方式 —- jdk5.0新增"></a>3.创建线程的方式三：实现Callable接口的方式 —- jdk5.0新增</h2><p>使用方法<br> 1.创建一个实现Callable接口的实现类<br> 2.重写call方法，将此线程需要执行的操作声明在call（）中<br> 3.创建Callable接口实现类的对象<br> 4.将此Callable接口实现类的对象作为参数传递到FutureTask构造器中，创建FutureTask的对象<br> 5.将FutureTask的对象作为参数传入Thread类的构造器中，创建Thread对象，并调用start（）方法。<br> 6.还可以使用FutureTask对象的get()方法获取Callable中的call方法的返回值，不需要返回值的话，在重写的call（）方法里返回null即可</p>
+<p>  如何理解实现Callable接口的方式创建多线程比实现Runnable接口创建多线程方式强大？</p>
+<ol>
+<li>call()方法是可以有返回值的。</li>
+<li>call()可以抛出异常，被外面的操作捕获，获取异常的信息</li>
+<li>Callable是支持泛型的  </li>
+</ol>
+<p>例子：创建一个以实现Callable方式的线程，内部计算1到100的所有偶数的和  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//1.创建一个实现Callable接口的实现类</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">NumThread</span> <span class="keyword">implements</span> <span class="title">Callable</span>&lt;<span class="title">Integer</span>&gt;</span>&#123;</span><br><span class="line">    <span class="comment">//2.重写call方法，将此线程需要执行的操作声明在call（）中</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Integer <span class="title">call</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        <span class="keyword">int</span> sum = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt;= <span class="number">100</span>; i++) &#123;</span><br><span class="line">            <span class="keyword">if</span>(i % <span class="number">2</span> == <span class="number">0</span>)&#123;</span><br><span class="line">                sum += i;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> sum;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ThreadNew</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        <span class="comment">//3.创建Callable接口实现类的对象</span></span><br><span class="line">        NumThread n = <span class="keyword">new</span> NumThread();</span><br><span class="line">        <span class="comment">//4.将此Callable接口实现类的对象作为参数传递到FutureTask构造器中，创建FutureTask的对象</span></span><br><span class="line">        FutureTask&lt;Integer&gt; futureTask = <span class="keyword">new</span> FutureTask(n);</span><br><span class="line">        <span class="comment">//5.将FutureTask的对象作为参数传入Thread类的构造器中，创建Thread对象，并调用start（）方法。</span></span><br><span class="line">        Thread t = <span class="keyword">new</span> Thread(futureTask);</span><br><span class="line">        t.start();</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="comment">//6.获取Callable中的call方法的返回值</span></span><br><span class="line">            <span class="comment">//get方法返回值即为futureTask构造器参数Callable实现类重写的call（）方法的返回值</span></span><br><span class="line">            Integer res = futureTask.get();</span><br><span class="line">            System.out.println(<span class="string">&quot;总和为&quot;</span>+res);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125; <span class="keyword">catch</span> (ExecutionException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//运行结果为：总和为2550</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="创建线程池的方式之四：创建线程池Executor"><a href="#创建线程池的方式之四：创建线程池Executor" class="headerlink" title="创建线程池的方式之四：创建线程池Executor"></a>创建线程池的方式之四：创建线程池Executor</h2><p>好处：<br>1.提高响应速度（减少了创建新线程的时间）<br>2.降低资源消耗（重复利用线程池中线程，不需要每次都创建）<br>3.便于线程管理<br>corePoolSize：核心池的大小<br>maximumPoolSize：最大线程数<br>keepAliveTime：线程没任务时最多保持多长时间后会终止</p>
+<p>主要有三种 Executor：</p>
+<p>CachedThreadPool：一个任务创建一个线程；<br>FixedThreadPool：所有任务只能使用固定大小的线程；<br>SingleThreadExecutor：相当于大小为 1 的 FixedThreadPool。</p>
+<p>例子：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//建立MyRunnable类实现Runnable并在run()内添加需要的业务逻辑即可，这里省略</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">    ExecutorService executorService = Executors.newCachedThreadPool();</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">5</span>; i++) &#123;</span><br><span class="line">        executorService.execute(<span class="keyword">new</span> MyRunnable());</span><br><span class="line">    &#125;</span><br><span class="line">    executorService.shutdown();</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h1 id="线程的生命周期和优先级"><a href="#线程的生命周期和优先级" class="headerlink" title="线程的生命周期和优先级"></a>线程的生命周期和优先级</h1><p>生命周期：<br><img src="https://imgconvert.csdnimg.cn/aHR0cHM6Ly9jYW1vLmdpdGh1YnVzZXJjb250ZW50LmNvbS9iMDJiNjU0Mzk3YjE3YTE5OWFhMDI3MjdiNmVkNjVkZjBkZDRlZTE5LzY4NzQ3NDcwNzMzYTJmMmY2OTZkNjcyZDYyNmM2ZjY3MmU2MzczNjQ2ZTY5NmQ2NzJlNjM2ZTJmMzIzMDMxMzgzMTMwMzMzMTMxMzAzNTM2MzIzNzM0MzMzNzJlNzA2ZTY3M2Y3ODJkNmY3MzczMmQ3MDcyNmY2MzY1NzM3MzNkNjk2ZDYxNjc2NTJmNzc2MTc0NjU3MjZkNjE3MjZiMmM3NDc5NzA2NTVmNWE2ZDQ2NzU1YTMzNzA2ZjVhNTczNTZlNjE0NzU2NzA2NDQ3NmIyYzczNjg2MTY0NmY3NzVmMzEzMDJjNzQ2NTc4NzQ1ZjYxNDg1MjMwNjM0ODRkMzY0Yzc5Mzk2OTYyNDczOTZlNGM2ZDRlN2E1YTQ3MzQ3NTYyNmQ1NjMwNGMzMzcwNmY2MjMzNTUzNTRkNmE0MTMzNGY0NDU5N2E0ZDU0NDkzZDJjNzM2OTdhNjU1ZjMxMzYyYzYzNmY2YzZmNzI1ZjQ2NDY0NjQ2NDY0NjJjNzQ1ZjM3MzA?x-oss-process=image/format,png" alt="线程的状态转换"><br>状态</p>
+<ul>
+<li>new（新建）</li>
+<li>runnnable（就绪）</li>
+<li>blocked（阻塞）</li>
+<li>waiting（等待）</li>
+<li>time waiting （定时等待）</li>
+<li>terminated（终止)  </li>
+</ul>
+<p>线程状态流程如下：</p>
+<ul>
+<li>线程创建后，进入 new 状态</li>
+<li>调用 start 方法，进入 runnable 状态</li>
+<li>JVM 按照线程优先级及时间分片等执行 runnable 状态的线程。开始执行时，执行run()方法并进入 running 状态</li>
+<li>如果线程执行 sleep、wait、join，或者进入 IO 阻塞等。进入 wait 或者 blocked 状态</li>
+<li>线程执行完毕后，线程被线程队列移除。最后为 terminated 状态          </li>
+</ul>
+<h1 id="线程的同步方法"><a href="#线程的同步方法" class="headerlink" title="线程的同步方法"></a>线程的同步方法</h1><h2 id="方式一：同步代码块"><a href="#方式一：同步代码块" class="headerlink" title="方式一：同步代码块"></a>方式一：同步代码块</h2><p>优点：线程安全但是效率较低<br>注意：同步监视器必须是独一无二的唯一对象。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">synchronized</span>(同步监视器)&#123;</span><br><span class="line">   <span class="comment">//需要被同步的代码...  </span></span><br><span class="line">   </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>非常经典的例子：卖票。<br>创建三个窗口卖票，总票数为10张，使用实现Runnable接口的方式。<br>若不加同步：卖票过程中，可能出现重票、错票的线程安全问题。<br>问题出现的原因：当某个线程操作车票的过程中，尚未操作完成时，其他线程参与进来。<br>这里就用同步代码块来实现。  </p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">WindowTest1</span></span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        Window1 w = <span class="keyword">new</span> Window1();</span><br><span class="line">        Thread t1 = <span class="keyword">new</span> Thread(w);</span><br><span class="line">        Thread t2 = <span class="keyword">new</span> Thread(w);</span><br><span class="line">        Thread t3 = <span class="keyword">new</span> Thread(w);</span><br><span class="line"></span><br><span class="line">        t1.setName(<span class="string">&quot;窗口一&quot;</span>);</span><br><span class="line">        t2.setName(<span class="string">&quot;窗口二&quot;</span>);</span><br><span class="line">        t3.setName(<span class="string">&quot;窗口三&quot;</span>);</span><br><span class="line"></span><br><span class="line">        t1.start();</span><br><span class="line">        t2.start();</span><br><span class="line">        t3.start();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Window1</span> <span class="keyword">implements</span> <span class="title">Runnable</span></span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> tickets = <span class="number">10</span>;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">while</span>(<span class="keyword">true</span>) &#123;</span><br><span class="line">            <span class="keyword">synchronized</span>(<span class="keyword">this</span>)&#123;</span><br><span class="line">                <span class="keyword">if</span>(tickets &gt; <span class="number">0</span>)&#123;</span><br><span class="line">                    System.out.println(Thread.currentThread().getName()+<span class="string">&quot;卖票，票号为&quot;</span>+tickets);</span><br><span class="line">                    tickets--;</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="keyword">else</span>&#123;</span><br><span class="line">                    <span class="keyword">break</span>;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">//执行结果：没有重票，错票的情况。</span></span><br><span class="line"><span class="comment">//窗口一卖票，票号为10</span></span><br><span class="line"><span class="comment">//窗口一卖票，票号为9</span></span><br><span class="line"><span class="comment">//窗口一卖票，票号为8</span></span><br><span class="line"><span class="comment">//窗口一卖票，票号为7</span></span><br><span class="line"><span class="comment">//窗口一卖票，票号为6</span></span><br><span class="line"><span class="comment">//窗口一卖票，票号为5</span></span><br><span class="line"><span class="comment">//窗口一卖票，票号为4</span></span><br><span class="line"><span class="comment">//窗口一卖票，票号为3</span></span><br><span class="line"><span class="comment">//窗口一卖票，票号为2</span></span><br><span class="line"><span class="comment">//窗口三卖票，票号为1</span></span><br></pre></td></tr></table></figure>
+
+
+
+
+<h2 id="方式二：声明同步方法"><a href="#方式二：声明同步方法" class="headerlink" title="方式二：声明同步方法"></a>方式二：声明同步方法</h2><p>在需要同步的操作共享资源的方法上添加synchronized关键字<br>同样是卖票的例子：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">WindowTest3</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        Window3 w = <span class="keyword">new</span> Window3();</span><br><span class="line">        Thread t1 = <span class="keyword">new</span> Thread(w);</span><br><span class="line">        Thread t2 = <span class="keyword">new</span> Thread(w);</span><br><span class="line">        Thread t3 = <span class="keyword">new</span> Thread(w);</span><br><span class="line"></span><br><span class="line">        t1.setName(<span class="string">&quot;窗口一&quot;</span>);</span><br><span class="line">        t2.setName(<span class="string">&quot;窗口二&quot;</span>);</span><br><span class="line">        t3.setName(<span class="string">&quot;窗口三&quot;</span>);</span><br><span class="line"></span><br><span class="line">        t1.start();</span><br><span class="line">        t2.start();</span><br><span class="line">        t3.start();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Window3</span> <span class="keyword">implements</span> <span class="title">Runnable</span></span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> tickets = <span class="number">10</span>;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">while</span>(<span class="keyword">true</span>) &#123;</span><br><span class="line">            show();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">show</span><span class="params">()</span></span>&#123; <span class="comment">//同步监视器：this</span></span><br><span class="line">        <span class="keyword">if</span>(tickets &gt; <span class="number">0</span>)&#123;</span><br><span class="line">            System.out.println(Thread.currentThread().getName()+<span class="string">&quot;卖票，票号为&quot;</span>+tickets);</span><br><span class="line">            tickets--;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//窗口一卖票，票号为10</span></span><br><span class="line"><span class="comment">//窗口一卖票，票号为9</span></span><br><span class="line"><span class="comment">//窗口一卖票，票号为8</span></span><br><span class="line"><span class="comment">//窗口一卖票，票号为7</span></span><br><span class="line"><span class="comment">//窗口一卖票，票号为6</span></span><br><span class="line"><span class="comment">//窗口一卖票，票号为5</span></span><br><span class="line"><span class="comment">//窗口一卖票，票号为4</span></span><br><span class="line"><span class="comment">//窗口三卖票，票号为3</span></span><br><span class="line"><span class="comment">//窗口三卖票，票号为2</span></span><br><span class="line"><span class="comment">//窗口三卖票，票号为1</span></span><br></pre></td></tr></table></figure>
+
+
+<h2 id="方式三：JUC的lock工具"><a href="#方式三：JUC的lock工具" class="headerlink" title="方式三：JUC的lock工具"></a>方式三：JUC的lock工具</h2><p>主要学习的是java.util.concurrent.locks.ReentrantLock<br>使用方式：进入操作共享数据逻辑之前，使用lock.lock()为线程加锁（假设实例化的ReentrantLcok对象名为lock），操作共享数据结束后释放锁：lock.unlock()，具体例子如下(这里使用了匿名内部类简化线程的创建)：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ThreadDemo1</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        Ticket ticket = <span class="keyword">new</span> Ticket();</span><br><span class="line"></span><br><span class="line">        <span class="comment">//普通写法</span></span><br><span class="line">        <span class="keyword">new</span> Thread(<span class="keyword">new</span> Runnable() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">                <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">10</span>; i++)&#123;</span><br><span class="line">                    ticket.sale_ticket();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;, <span class="string">&quot;一&quot;</span>).start();</span><br><span class="line"></span><br><span class="line">        <span class="comment">//lambda表达式写法</span></span><br><span class="line">        <span class="keyword">new</span> Thread(() -&gt; &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">10</span>; i++) &#123;</span><br><span class="line">                ticket.sale_ticket();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;, <span class="string">&quot;二&quot;</span>).start();</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">        <span class="keyword">new</span> Thread(()-&gt;&#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">10</span>; i++) &#123;</span><br><span class="line">                ticket.sale_ticket();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;, <span class="string">&quot;三&quot;</span>).start();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Ticket</span></span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">int</span> tickets_number = <span class="number">10</span>;</span><br><span class="line">    Lock lock = <span class="keyword">new</span> ReentrantLock();</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">sale_ticket</span><span class="params">()</span></span>&#123;</span><br><span class="line">        lock.lock();</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">if</span>(tickets_number &gt; <span class="number">0</span>)&#123;</span><br><span class="line">                System.out.println(<span class="string">&quot;线程&quot;</span> + Thread.currentThread().getName() + <span class="string">&quot;卖第&quot;</span>+tickets_number--+<span class="string">&quot;张票，还剩&quot;</span> + tickets_number  + <span class="string">&quot;张票&quot;</span> );</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;<span class="keyword">catch</span> (Exception e)&#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;<span class="keyword">finally</span>&#123;</span><br><span class="line">            lock.unlock();</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//运行结果</span></span><br><span class="line"><span class="comment">//线程一卖第10张票，还剩9张票</span></span><br><span class="line"><span class="comment">//线程一卖第9张票，还剩8张票</span></span><br><span class="line"><span class="comment">//线程一卖第8张票，还剩7张票</span></span><br><span class="line"><span class="comment">//线程一卖第7张票，还剩6张票</span></span><br><span class="line"><span class="comment">//线程二卖第6张票，还剩5张票</span></span><br><span class="line"><span class="comment">//线程一卖第5张票，还剩4张票</span></span><br><span class="line"><span class="comment">//线程三卖第4张票，还剩3张票</span></span><br><span class="line"><span class="comment">//线程一卖第3张票，还剩2张票</span></span><br><span class="line"><span class="comment">//线程三卖第2张票，还剩1张票</span></span><br><span class="line"><span class="comment">//线程一卖第1张票，还剩0张票</span></span><br></pre></td></tr></table></figure>
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/java%E5%A4%9A%E7%BA%BF%E7%A8%8B/" rel="tag"># java多线程</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2020/08/16/%E9%A1%B9%E7%9B%AE-10/" rel="prev" title="实现用户访问某个模块按权限拦截的方法">
+                  <i class="fa fa-chevron-left"></i> 实现用户访问某个模块按权限拦截的方法
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2020/08/16/juc-2/" rel="next" title="JUC学习笔记二：线程间的通信；同步方法锁的理解；juc集合类简介">
+                  JUC学习笔记二：线程间的通信；同步方法锁的理解；juc集合类简介 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+      
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      const activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      const commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      
+
+      
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Stephen Jia</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="//cdn.jsdelivr.net/npm/animejs@3.2.0/lib/anime.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

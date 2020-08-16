@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.0.2">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.14.0/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css">
+
+<script class="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"jiazx.top","root":"/","scheme":"Muse","version":"8.0.0-rc.5","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false};
+  </script>
+
+  <meta name="description" content="公平锁和非公平锁：所谓公平锁就是各个线程争抢锁的时候要按照申请锁的顺序来，不能随意加塞，类似排队打饭 先来后到。 非公平锁则相反，谁先抢到锁，谁就先执行，没有抢到，才按照申请锁的顺序来执行。有可能后申请的线程比先申请的线程优先获取到锁,在高并发的情况下,有可能造成优先级反转或者饥饿现象。 公平锁&#x2F;非公平锁的创建：  并发包ReentrantLock的创建可以指定构造函数的boolean类型来得到公">
+<meta property="og:type" content="article">
+<meta property="og:title" content="java常见面试题记录三：java锁有哪几种？公平&#x2F;非公平，可重入，递归锁，自旋锁...">
+<meta property="og:url" content="http://jiazx.top/2020/08/16/job-3/index.html">
+<meta property="og:site_name" content="J Blog">
+<meta property="og:description" content="公平锁和非公平锁：所谓公平锁就是各个线程争抢锁的时候要按照申请锁的顺序来，不能随意加塞，类似排队打饭 先来后到。 非公平锁则相反，谁先抢到锁，谁就先执行，没有抢到，才按照申请锁的顺序来执行。有可能后申请的线程比先申请的线程优先获取到锁,在高并发的情况下,有可能造成优先级反转或者饥饿现象。 公平锁&#x2F;非公平锁的创建：  并发包ReentrantLock的创建可以指定构造函数的boolean类型来得到公">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-08-16T09:22:12.000Z">
+<meta property="article:modified_time" content="2020-08-16T09:24:23.881Z">
+<meta property="article:author" content="Stephen Jia">
+<meta property="article:tag" content="面试题集锦">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://jiazx.top/2020/08/16/job-3/">
+
+
+<script class="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>java常见面试题记录三：java锁有哪几种？公平/非公平，可重入，递归锁，自旋锁... | J Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header {
+    visibility: visible;
+  }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">J Blog</h1>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <section class="post-toc-wrap sidebar-panel">
+          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%85%AC%E5%B9%B3%E9%94%81%E5%92%8C%E9%9D%9E%E5%85%AC%E5%B9%B3%E9%94%81%EF%BC%9A"><span class="nav-number">1.</span> <span class="nav-text">公平锁和非公平锁：</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%AF%E9%87%8D%E5%85%A5%E9%94%81%EF%BC%88%E9%80%92%E5%BD%92%E9%94%81%EF%BC%89%EF%BC%9A"><span class="nav-number">2.</span> <span class="nav-text">可重入锁（递归锁）：</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%87%AA%E6%97%8B%E9%94%81%EF%BC%9A"><span class="nav-number">3.</span> <span class="nav-text">自旋锁：</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%8B%AC%E5%8D%A0%E9%94%81%EF%BC%9A"><span class="nav-number">4.</span> <span class="nav-text">独占锁：</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%85%B1%E4%BA%AB%E9%94%81%EF%BC%9A"><span class="nav-number">5.</span> <span class="nav-text">共享锁：</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%AF%BB%E5%86%99%E9%94%81%EF%BC%9A"><span class="nav-number">6.</span> <span class="nav-text">读写锁：</span></a></li></ol></div>
+      </section>
+      <!--/noindex-->
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Stephen Jia</p>
+  <div class="site-description" itemprop="description">Try Everything......</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives">
+          <span class="site-state-item-count">41</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </section>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+      
+
+      
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://jiazx.top/2020/08/16/job-3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Stephen Jia">
+      <meta itemprop="description" content="Try Everything......">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="J Blog">
+    </span>
+
+    
+    
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          java常见面试题记录三：java锁有哪几种？公平/非公平，可重入，递归锁，自旋锁...
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-08-16 17:22:12 / 修改时间：17:24:23" itemprop="dateCreated datePublished" datetime="2020-08-16T17:22:12+08:00">2020-08-16</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <h1 id="公平锁和非公平锁："><a href="#公平锁和非公平锁：" class="headerlink" title="公平锁和非公平锁："></a>公平锁和非公平锁：</h1><p>所谓公平锁就是各个线程争抢锁的时候要<strong>按照申请锁的顺序来</strong>，不能随意加塞，类似排队打饭 先来后到。</p>
+<p>非公平锁则相反，谁先抢到锁，谁就先执行，没有抢到，才按照申请锁的顺序来执行。有可能后申请的线程比先申请的线程优先获取到锁,在高并发的情况下,有可能造成优先级反转或者饥饿现象。</p>
+<p>公平锁/非公平锁的创建：<br>  并发包ReentrantLock的创建可以指定构造函数的boolean类型来得到公平锁或者非公平锁 默认是非公平锁。<br>  如：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">new</span> ReentrantLock();</span><br><span class="line"><span class="keyword">new</span> ReentrantLock(fasle);</span><br><span class="line"><span class="comment">//都是非公平锁</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">new</span> ReentrantLock(<span class="keyword">true</span>);</span><br><span class="line"><span class="comment">//公平锁</span></span><br></pre></td></tr></table></figure>
+
+<p>就Java ReentrantLock而言,<br>通过构造函数指定该锁是否是公平锁 默认是非公平锁 非公平锁的优点在于吞吐量比公平锁大。<br><strong>synchronized也是一种非公平锁</strong>.</p>
+<h1 id="可重入锁（递归锁）："><a href="#可重入锁（递归锁）：" class="headerlink" title="可重入锁（递归锁）："></a>可重入锁（递归锁）：</h1><p>可重入锁就是如果拿到锁进入A方法内，而A方法内又调用了另一个同步方法B，那么这个线程并不是拿到了两个同步方法的两把锁，而仅仅是刚开始拿到的一把锁。<br>即：同一线程外层函数获得锁之后，内层函数仍然能获取该锁的代码。在同一个线程方法外层获取锁的时候，在进入内层方法会自动获取该锁。</p>
+<p>典型的可重入锁：<br><strong>ReentrantLock和synchronized</strong>都是可重入锁。</p>
+<p>可重入锁的作用：<br>最大的作用就是避免死锁。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Phone</span></span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">sendSms</span><span class="params">()</span> <span class="keyword">throws</span> Exception</span>&#123;</span><br><span class="line">        System.out.println(Thread.currentThread().getName()+<span class="string">&quot;\tsendSms&quot;</span>);</span><br><span class="line">        sendEmail();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">sendEmail</span><span class="params">()</span> <span class="keyword">throws</span> Exception</span>&#123;</span><br><span class="line">        System.out.println(Thread.currentThread().getName()+<span class="string">&quot;\tsendEmail&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ReenterLockDemo</span> </span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * t1 sendSms</span></span><br><span class="line"><span class="comment">     * t1 sendEmail</span></span><br><span class="line"><span class="comment">     * t2 sendSms</span></span><br><span class="line"><span class="comment">     * t2 sendEmail</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> args</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        Phone phone = <span class="keyword">new</span> Phone();</span><br><span class="line">        <span class="keyword">new</span> Thread(()-&gt;&#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                phone.sendSms();</span><br><span class="line">            &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">                e.printStackTrace();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;,<span class="string">&quot;t1&quot;</span>).start();</span><br><span class="line">        <span class="keyword">new</span> Thread(()-&gt;&#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                phone.sendSms();</span><br><span class="line">            &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">                e.printStackTrace();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;,<span class="string">&quot;t2&quot;</span>).start();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>输出：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">t1 sendSms</span><br><span class="line">t1 sendEmail</span><br><span class="line">t2 sendSms</span><br><span class="line">t2 sendEmail</span><br></pre></td></tr></table></figure>
+
+<h1 id="自旋锁："><a href="#自旋锁：" class="headerlink" title="自旋锁："></a>自旋锁：</h1><p><strong>自旋锁就是指获取锁的线程不会立即阻塞，而是通过循环判断的方式去获得锁，这样的好处是减少线程上下文切换的消耗，缺点是循环会消耗cpu。</strong><br><strong>直接举例，使用CAS的方法手写一个自旋锁：</strong></p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SpinLockDemo</span> </span>&#123;</span><br><span class="line">    <span class="comment">//常见线程的原子引用</span></span><br><span class="line">    AtomicReference&lt;Thread&gt; atomicReference = <span class="keyword">new</span> AtomicReference&lt;&gt;();</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        SpinLockDemo spinLockDemo = <span class="keyword">new</span> SpinLockDemo();</span><br><span class="line">        <span class="keyword">new</span> Thread(() -&gt;&#123;</span><br><span class="line">            spinLockDemo.myLock();</span><br><span class="line">            <span class="comment">//等待5秒，便于其他线程进入并验证效果</span></span><br><span class="line">            <span class="keyword">try</span> &#123; TimeUnit.SECONDS.sleep(<span class="number">5</span>); &#125; <span class="keyword">catch</span> (InterruptedException e) &#123; e.printStackTrace(); &#125;</span><br><span class="line">            spinLockDemo.MyUnLock();</span><br><span class="line">        &#125;, <span class="string">&quot;AA&quot;</span>).start();</span><br><span class="line">        <span class="comment">//保证AA先执行</span></span><br><span class="line">        <span class="keyword">try</span> &#123; TimeUnit.SECONDS.sleep(<span class="number">1</span>); &#125; <span class="keyword">catch</span> (InterruptedException e) &#123; e.printStackTrace(); &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">//BB直接执行</span></span><br><span class="line">        <span class="keyword">new</span> Thread(() -&gt;&#123;</span><br><span class="line">            spinLockDemo.myLock();</span><br><span class="line">            spinLockDemo.MyUnLock();</span><br><span class="line">        &#125;, <span class="string">&quot;BB&quot;</span>).start();</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">myLock</span><span class="params">()</span></span>&#123;</span><br><span class="line">        Thread thread = Thread.currentThread();</span><br><span class="line">        System.out.println(Thread.currentThread().getName()+<span class="string">&quot; come in&quot;</span>);</span><br><span class="line">        <span class="comment">//如果不是null，在这里死循环，实现lock的效果</span></span><br><span class="line">        <span class="keyword">while</span>(!atomicReference.compareAndSet(<span class="keyword">null</span>, thread))&#123;</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">MyUnLock</span><span class="params">()</span></span>&#123;</span><br><span class="line">        Thread thread = Thread.currentThread();</span><br><span class="line">        atomicReference.compareAndSet(thread, <span class="keyword">null</span>);</span><br><span class="line">        System.out.println(Thread.currentThread().getName()+<span class="string">&quot; invoked unlock&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>执行结果：<br>public class SpinLockDemo {<br>    AtomicReference<Thread> atomicReference = new AtomicReference&lt;&gt;();<br>    public static void main(String[] args) {<br>        SpinLockDemo spinLockDemo = new SpinLockDemo();<br>        new Thread(() -&gt;{<br>            spinLockDemo.myLock();<br>            try { TimeUnit.SECONDS.sleep(5); } catch (InterruptedException e) { e.printStackTrace(); }<br>            spinLockDemo.MyUnLock();<br>        }, “AA”).start();</p>
+<pre><code>    try &#123; TimeUnit.SECONDS.sleep(1); &#125; catch (InterruptedException e) &#123; e.printStackTrace(); &#125;
+
+    new Thread(() -&gt;&#123;
+        spinLockDemo.myLock();
+        spinLockDemo.MyUnLock();
+    &#125;, &quot;BB&quot;).start();
+
+&#125;
+
+
+
+public void myLock()&#123;
+    Thread thread = Thread.currentThread();
+    System.out.println(Thread.currentThread().getName()+&quot; come in&quot;);
+    //如果不是null，在这里死循环，实现lock的效果
+    while(!atomicReference.compareAndSet(null, thread))&#123;
+
+    &#125;
+&#125;
+
+public void MyUnLock()&#123;
+    Thread thread = Thread.currentThread();
+    atomicReference.compareAndSet(thread, null);
+    System.out.println(Thread.currentThread().getName()+&quot; invoked unlock&quot;);
+&#125;</code></pre>
+<p>}</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">AA come in</span><br><span class="line">BB come in</span><br><span class="line"><span class="comment">//下面一BB一定要等AA执行完毕才能执行完。</span></span><br><span class="line">AA invoked unlock</span><br><span class="line">BB invoked unlock</span><br></pre></td></tr></table></figure>
+
+<h1 id="独占锁："><a href="#独占锁：" class="headerlink" title="独占锁："></a>独占锁：</h1><p>该锁一次只能被一个线程锁持有。<strong>ReentrantLock和synchronized</strong>都是独占锁。</p>
+<h1 id="共享锁："><a href="#共享锁：" class="headerlink" title="共享锁："></a>共享锁：</h1><p>指该锁可以被多个线程共享。<br>ReentrantLock的写是独占锁，但是读是共享的。可以提高并发的效率。</p>
+<h1 id="读写锁："><a href="#读写锁：" class="headerlink" title="读写锁："></a>读写锁：</h1><p>之前的juc笔记中有。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E9%9D%A2%E8%AF%95%E9%A2%98%E9%9B%86%E9%94%A6/" rel="tag"># 面试题集锦</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2020/08/16/job-2/" rel="prev" title="Java常见面试题记录二：CAS以及产生的的ABA问题">
+                  <i class="fa fa-chevron-left"></i> Java常见面试题记录二：CAS以及产生的的ABA问题
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2020/08/16/job-4/" rel="next" title="java常见面试题记录四：HashMap细节回顾">
+                  java常见面试题记录四：HashMap细节回顾 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+      
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      const activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      const commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      
+
+      
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Stephen Jia</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="//cdn.jsdelivr.net/npm/animejs@3.2.0/lib/anime.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

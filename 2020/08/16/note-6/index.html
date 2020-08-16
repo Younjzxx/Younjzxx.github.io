@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.0.2">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.14.0/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css">
+
+<script class="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"jiazx.top","root":"/","scheme":"Muse","version":"8.0.0-rc.5","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false};
+  </script>
+
+  <meta name="description" content="1.GET请求例子：待测试方法： 1234567891011121314&#x2F;&#x2F;类级别映射为&quot;&#x2F;apphub&quot;    @RequestMapping(value &#x3D; &quot;&#x2F;template&#x2F;info&quot;, method &#x3D; RequestMethod.GET)    public WebResponse&lt;AppTemplateDTO&gt; getTmepla">
+<meta property="og:type" content="article">
+<meta property="og:title" content="利用MockMvc进行controller层的单元测试">
+<meta property="og:url" content="http://jiazx.top/2020/08/16/note-6/index.html">
+<meta property="og:site_name" content="J Blog">
+<meta property="og:description" content="1.GET请求例子：待测试方法： 1234567891011121314&#x2F;&#x2F;类级别映射为&quot;&#x2F;apphub&quot;    @RequestMapping(value &#x3D; &quot;&#x2F;template&#x2F;info&quot;, method &#x3D; RequestMethod.GET)    public WebResponse&lt;AppTemplateDTO&gt; getTmepla">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-08-16T09:46:30.000Z">
+<meta property="article:modified_time" content="2020-08-16T09:47:30.487Z">
+<meta property="article:author" content="Stephen Jia">
+<meta property="article:tag" content="随笔记录">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://jiazx.top/2020/08/16/note-6/">
+
+
+<script class="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>利用MockMvc进行controller层的单元测试 | J Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header {
+    visibility: visible;
+  }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">J Blog</h1>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <section class="post-toc-wrap sidebar-panel">
+          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#1-GET%E8%AF%B7%E6%B1%82%E4%BE%8B%E5%AD%90%EF%BC%9A"><span class="nav-number">1.</span> <span class="nav-text">1.GET请求例子：</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2-POST%E8%AF%B7%E6%B1%82%E4%BE%8B%E5%AD%90"><span class="nav-number">2.</span> <span class="nav-text">2.POST请求例子</span></a></li></ol></div>
+      </section>
+      <!--/noindex-->
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Stephen Jia</p>
+  <div class="site-description" itemprop="description">Try Everything......</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives">
+          <span class="site-state-item-count">41</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </section>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+      
+
+      
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://jiazx.top/2020/08/16/note-6/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Stephen Jia">
+      <meta itemprop="description" content="Try Everything......">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="J Blog">
+    </span>
+
+    
+    
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          利用MockMvc进行controller层的单元测试
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-08-16 17:46:30 / 修改时间：17:47:30" itemprop="dateCreated datePublished" datetime="2020-08-16T17:46:30+08:00">2020-08-16</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <h1 id="1-GET请求例子："><a href="#1-GET请求例子：" class="headerlink" title="1.GET请求例子："></a>1.GET请求例子：</h1><p>待测试方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//类级别映射为&quot;/apphub&quot;</span></span><br><span class="line">    <span class="meta">@RequestMapping(value = &quot;/template/info&quot;, method = RequestMethod.GET)</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> WebResponse&lt;AppTemplateDTO&gt; <span class="title">getTmeplate</span><span class="params">(<span class="meta">@RequestParam</span> Integer id)</span> </span>&#123;</span><br><span class="line">        WebResponse response = <span class="keyword">new</span> WebResponse();</span><br><span class="line">        Response&lt;AppTemplateDTO&gt; appTemplateResponse = appTemplateService.query(id);</span><br><span class="line">        <span class="keyword">if</span> (appTemplateResponse.isFailed()) &#123;</span><br><span class="line">            response.addErrorMessages(appTemplateResponse.getErrorMessages());</span><br><span class="line">            <span class="keyword">return</span> response;</span><br><span class="line">        &#125;</span><br><span class="line">        AppTemplateDTO appTemplateDTO = appTemplateResponse.getData();</span><br><span class="line">        response.setData(appTemplateDTO);</span><br><span class="line">        <span class="keyword">return</span> response;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>下面是单元测试</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> <span class="keyword">static</span> org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;</span><br><span class="line"><span class="keyword">import</span> <span class="keyword">static</span> org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;</span><br><span class="line"><span class="keyword">import</span> <span class="keyword">static</span> org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;</span><br><span class="line"><span class="keyword">import</span> <span class="keyword">static</span> org.junit.Assert.*;</span><br><span class="line"></span><br><span class="line"><span class="meta">@RunWith(PowerMockRunner.class)</span></span><br><span class="line"><span class="meta">@PrepareForTest(&#123;Configure.class&#125;)</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AppHubControllerTest</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> MockMvc mockMvc;</span><br><span class="line">    </span><br><span class="line">    <span class="meta">@InjectMocks</span></span><br><span class="line">    <span class="keyword">private</span> AppHubController appHubController;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Mock</span></span><br><span class="line">    <span class="keyword">private</span> AppTemplateService appTemplateService;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="meta">@Mock</span></span><br><span class="line">    <span class="keyword">private</span> WebRequest webRequest;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Mock</span></span><br><span class="line">    <span class="keyword">private</span> CmdbService cmdbService;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> MockHttpServletRequestBuilder request = <span class="keyword">null</span>;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Before</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setUp</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line"><span class="comment">//这步是必须的！</span></span><br><span class="line">        mockMvc = MockMvcBuilders.standaloneSetup(appHubController).build();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="meta">@Test</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">getTmeplate</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        Response&lt;AppTemplateDTO&gt; appTemplateResponse = <span class="keyword">new</span> Response&lt;&gt;();</span><br><span class="line"></span><br><span class="line">        AppTemplateDTO appTemplateDTO = <span class="keyword">new</span> AppTemplateDTO();</span><br><span class="line">        AppTemplateSourceDTO appTemplateSourceDTO = <span class="keyword">new</span> AppTemplateSourceDTO(TemplateSourceEnum.System, <span class="number">1</span>);</span><br><span class="line">        appTemplateDTO.setAppTemplateSource(appTemplateSourceDTO);</span><br><span class="line"></span><br><span class="line">        appTemplateResponse.setData(appTemplateDTO);</span><br><span class="line">        appTemplateResponse.setStatus(<span class="number">200</span>);</span><br><span class="line">        Mockito.when(appTemplateService.query(<span class="number">1</span>)).thenReturn(appTemplateResponse);</span><br><span class="line"><span class="comment">//上面的部分就是把该mock的service层方法mock掉</span></span><br><span class="line"></span><br><span class="line">        request = get(<span class="string">&quot;/apphub/template/info?id=1&quot;</span>).contentType(MediaType.APPLICATION_JSON);<span class="comment">//发出get请求，get请求需要拼url</span></span><br><span class="line"></span><br><span class="line"><span class="comment">//可以通过andExpect语句去进行多个部分的判断</span></span><br><span class="line">        mockMvc.perform(request).andExpect(status().isOk()).</span><br><span class="line">                andExpect(mvcResult -&gt; &#123;</span><br><span class="line"><span class="comment">//获取响应的响应体的内容</span></span><br><span class="line">                    String content = mvcResult.getResponse().getContentAsString();</span><br><span class="line"><span class="comment">//解析content为json，验证content即可</span></span><br><span class="line">                    WebResponse&lt;AppTemplateDTO&gt; webResponse = <span class="keyword">new</span> JSONObject().parseObject(content, WebResponse.class);</span><br><span class="line">                    assertTrue(webResponse.isSuccess());</span><br><span class="line">                    assertNotNull(webResponse.getData());</span><br><span class="line">                &#125;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h1 id="2-POST请求例子"><a href="#2-POST请求例子" class="headerlink" title="2.POST请求例子"></a>2.POST请求例子</h1><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//类级别映射为&quot;apphub&quot;</span></span><br><span class="line"><span class="meta">@RequestMapping(value = &quot;/template/create&quot;, method = RequestMethod.POST)</span></span><br><span class="line"><span class="comment">//注意除了一个post body对象还有一个整形参数</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> WebResponse&lt;Integer&gt; <span class="title">createTemplate</span><span class="params">(<span class="meta">@RequestBody</span> AppTemplateDTO appTemplateDTO, Integer orgId)</span> </span>&#123;</span><br><span class="line">        WebResponse response = <span class="keyword">new</span> WebResponse();</span><br><span class="line">        <span class="keyword">if</span> (appTemplateDTO.getAppTemplateSource() == <span class="keyword">null</span> || appTemplateDTO.getAppTemplateSource().getSourceType() == <span class="keyword">null</span>) &#123;</span><br><span class="line">            AppTemplateSourceDTO appTemplateSourceDTO = <span class="keyword">new</span> AppTemplateSourceDTO();</span><br><span class="line">            appTemplateSourceDTO.setSourceId(orgId);</span><br><span class="line">            appTemplateSourceDTO.setSourceType(TemplateSourceEnum.Organization);</span><br><span class="line">            appTemplateDTO.setAppTemplateSource(appTemplateSourceDTO);</span><br><span class="line">        &#125;</span><br><span class="line">        Response appTemplateResponse = appTemplateService.create(appTemplateDTO);</span><br><span class="line">        <span class="keyword">if</span> (appTemplateResponse.isFailed()) &#123;</span><br><span class="line">            response.addErrorMessages(appTemplateResponse.getErrorMessages());</span><br><span class="line">            <span class="keyword">return</span> response;</span><br><span class="line">        &#125;</span><br><span class="line">        response.setData(appTemplateResponse.getData());</span><br><span class="line">        <span class="keyword">return</span> response;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>下面是测试代码</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">    <span class="meta">@Test</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">createTemplate</span><span class="params">()</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        AppTemplateDTO appTemplateDTO = <span class="keyword">new</span> AppTemplateDTO();</span><br><span class="line"></span><br><span class="line">        Response appTemplateResponse = <span class="keyword">new</span> Response();</span><br><span class="line">        appTemplateResponse.setStatus(<span class="number">200</span>);</span><br><span class="line">        appTemplateResponse.setData(<span class="number">1</span>);</span><br><span class="line">        Mockito.when(appTemplateService.create(Mockito.any())).thenReturn(appTemplateResponse);</span><br><span class="line">    <span class="comment">//将方法请求体中的基本类型参数直接拼在url上面即可</span></span><br><span class="line">        request = post(<span class="string">&quot;/apphub/template/create?orgId=1&quot;</span>).contentType(MediaType.APPLICATION_JSON)</span><br><span class="line">                .content(JsonUtil.toJson(appTemplateDTO));</span><br><span class="line">    <span class="comment">//在test类中抽取公共的响应验证方法！</span></span><br><span class="line">        mock(request, <span class="keyword">true</span>, <span class="keyword">true</span>);</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">//公共的响应验证方法</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">mock</span><span class="params">(MockHttpServletRequestBuilder request,Boolean success, Boolean  dataNotNull)</span> <span class="keyword">throws</span> Exception</span>&#123;</span><br><span class="line">        mockMvc.perform(request).andExpect(status().isOk())</span><br><span class="line">                .andExpect(mvcResult -&gt; &#123;</span><br><span class="line">                    String content = mvcResult.getResponse().getContentAsString();</span><br><span class="line">                    WebResponse response = <span class="keyword">new</span> JSONObject().parseObject(content, WebResponse.class);</span><br><span class="line">                    Assert.assertTrue(success ? response.isSuccess() : response.isFailure());</span><br><span class="line">                    <span class="keyword">if</span> (dataNotNull) &#123;</span><br><span class="line">                        Assert.assertNotNull(response.getData());</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E9%9A%8F%E7%AC%94%E8%AE%B0%E5%BD%95/" rel="tag"># 随笔记录</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2020/08/16/note-5/" rel="prev" title="Cookie Session SessionId">
+                  <i class="fa fa-chevron-left"></i> Cookie Session SessionId
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2020/08/16/note-7/" rel="next" title="什么是蓝绿部署">
+                  什么是蓝绿部署 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+      
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      const activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      const commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      
+
+      
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Stephen Jia</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="//cdn.jsdelivr.net/npm/animejs@3.2.0/lib/anime.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

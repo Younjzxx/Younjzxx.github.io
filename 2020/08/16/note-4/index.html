@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.0.2">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="//cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.14.0/css/all.min.css">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/animate.css@3.1.1/animate.min.css">
+
+<script class="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"jiazx.top","root":"/","scheme":"Muse","version":"8.0.0-rc.5","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":false,"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false};
+  </script>
+
+  <meta name="description" content="1.指定Mockito1.1在UnitTest类上声明@RunWith(MockitoJUnitRunner.class) 12@RunWith(MockitoJUnitRunner.class)public class XXXTest &amp;#123;    1.2如果已经使用了类似@RunWith(SpringRunner.class)，采用MockitoRule 12345@RunWith(Ye">
+<meta property="og:type" content="article">
+<meta property="og:title" content="用Mockito做业务逻辑的单元测试">
+<meta property="og:url" content="http://jiazx.top/2020/08/16/note-4/index.html">
+<meta property="og:site_name" content="J Blog">
+<meta property="og:description" content="1.指定Mockito1.1在UnitTest类上声明@RunWith(MockitoJUnitRunner.class) 12@RunWith(MockitoJUnitRunner.class)public class XXXTest &amp;#123;    1.2如果已经使用了类似@RunWith(SpringRunner.class)，采用MockitoRule 12345@RunWith(Ye">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-08-16T09:44:24.000Z">
+<meta property="article:modified_time" content="2020-08-16T09:47:19.690Z">
+<meta property="article:author" content="Stephen Jia">
+<meta property="article:tag" content="随笔记录">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://jiazx.top/2020/08/16/note-4/">
+
+
+<script class="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>用Mockito做业务逻辑的单元测试 | J Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  body { margin-top: 2rem; }
+
+  .use-motion .menu-item,
+  .use-motion .sidebar,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header {
+    visibility: visible;
+  }
+
+  .use-motion .header,
+  .use-motion .site-brand-container .toggle,
+  .use-motion .footer { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle,
+  .use-motion .custom-logo-image {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line {
+    transform: scaleX(1);
+  }
+
+  .search-pop-overlay, .sidebar-nav { display: none; }
+  .sidebar-panel { display: block; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <h1 class="site-title">J Blog</h1>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <section class="post-toc-wrap sidebar-panel">
+          <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#1-%E6%8C%87%E5%AE%9AMockito"><span class="nav-number">1.</span> <span class="nav-text">1.指定Mockito</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2-%E8%A2%AB%E6%B5%8B%E8%AF%95%E7%9A%84%E7%B1%BB%E7%94%A8-InjectMocks%E6%A0%87%E8%AE%B0"><span class="nav-number">2.</span> <span class="nav-text">2.被测试的类用@InjectMocks标记</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#3-%E8%A2%AB%E6%B5%8B%E8%AF%95%E7%B1%BB%E7%9A%84%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5%E7%94%A8-Mock%E6%A0%87%E8%AE%B0"><span class="nav-number">3.</span> <span class="nav-text">3.被测试类的依赖注入用@Mock标记</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#4-%E6%B5%8B%E8%AF%95%E8%BF%87%E7%A8%8B%E5%92%8CMock%E8%BF%87%E7%A8%8B"><span class="nav-number">4.</span> <span class="nav-text">4.测试过程和Mock过程</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#5-%E6%B5%8B%E8%AF%95%E6%96%B9%E6%B3%95%E4%B8%AD%E5%8C%85%E5%90%AB%E9%9D%99%E6%80%81%E6%96%B9%E6%B3%95"><span class="nav-number">5.</span> <span class="nav-text">5.测试方法中包含静态方法</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#6-Mock%E8%BF%94%E5%9B%9E%E5%80%BC%E4%B8%BAvoid%E7%9A%84%E6%96%B9%E6%B3%95"><span class="nav-number">6.</span> <span class="nav-text">6.Mock返回值为void的方法</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#7-%E4%B8%80%E4%BB%BD%E5%AE%8C%E6%95%B4%E7%9A%84%E6%B5%8B%E8%AF%95%E4%BE%8B%E5%AD%90%EF%BC%9A"><span class="nav-number">7.</span> <span class="nav-text">7.一份完整的测试例子：</span></a></li></ol></div>
+      </section>
+      <!--/noindex-->
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-author animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Stephen Jia</p>
+  <div class="site-description" itemprop="description">Try Everything......</div>
+</div>
+<div class="site-state-wrap animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives">
+          <span class="site-state-item-count">41</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </section>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+      
+
+      
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://jiazx.top/2020/08/16/note-4/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Stephen Jia">
+      <meta itemprop="description" content="Try Everything......">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="J Blog">
+    </span>
+
+    
+    
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          用Mockito做业务逻辑的单元测试
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-08-16 17:44:24 / 修改时间：17:47:19" itemprop="dateCreated datePublished" datetime="2020-08-16T17:44:24+08:00">2020-08-16</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <h1 id="1-指定Mockito"><a href="#1-指定Mockito" class="headerlink" title="1.指定Mockito"></a>1.指定Mockito</h1><p>1.1在UnitTest类上声明@RunWith(MockitoJUnitRunner.class)</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RunWith(MockitoJUnitRunner.class)</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">XXXTest</span> </span>&#123;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>1.2如果已经使用了类似@RunWith(SpringRunner.class)，采用MockitoRule</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RunWith(YetAnotherRunner.class)</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TheTest</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Rule</span> <span class="keyword">public</span> MockitoRule mockito = MockitoJUnit.rule();</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>1.3　或者使用API</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">MockitoAnnotations.initMocks(obj)</span><br></pre></td></tr></table></figure>
+
+<h1 id="2-被测试的类用-InjectMocks标记"><a href="#2-被测试的类用-InjectMocks标记" class="headerlink" title="2.被测试的类用@InjectMocks标记"></a>2.被测试的类用@InjectMocks标记</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">@InjectMocks LocalPub localPub;</span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="3-被测试类的依赖注入用-Mock标记"><a href="#3-被测试类的依赖注入用-Mock标记" class="headerlink" title="3.被测试类的依赖注入用@Mock标记"></a>3.被测试类的依赖注入用@Mock标记</h1><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Mock</span> Foo foo;</span><br><span class="line"><span class="meta">@Mock</span> Bar bar;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+
+<p>结合上述２和３，被测试类的代码大致如下所示</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">class LocalPub&#123;</span><br><span class="line">     </span><br><span class="line">  @Autowired</span><br><span class="line">  Foo foo;</span><br><span class="line">   </span><br><span class="line">  @Autowired</span><br><span class="line">  Bar bar;</span><br><span class="line">     </span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h1 id="4-测试过程和Mock过程"><a href="#4-测试过程和Mock过程" class="headerlink" title="4.测试过程和Mock过程"></a>4.测试过程和Mock过程</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">when(foo.foo()).thenReturn(&quot;ok&quot;);</span><br><span class="line">when(bar.bar()).thenReturn(&quot;fail&quot;);</span><br><span class="line"> </span><br><span class="line">String ans&#x3D;localPub.x();</span><br><span class="line"> </span><br><span class="line">assertEquals(&quot;x&quot;,ans);</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>结合上述的单元测试片段，大概的被测试代码如下</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> String <span class="title">x</span><span class="params">()</span></span>&#123;</span><br><span class="line">  String a=  foo.foo();</span><br><span class="line">  String b=bar.bar();</span><br><span class="line">  <span class="keyword">return</span> <span class="string">&quot;x&quot;</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h1 id="5-测试方法中包含静态方法"><a href="#5-测试方法中包含静态方法" class="headerlink" title="5.测试方法中包含静态方法"></a>5.测试方法中包含静态方法</h1><p>看上去一切都完美，但是如果有静态方法访问到外部资源，会导致单元测试超时或失败<br>–用PowerMockit来Mock静态方法来解决这类问题<br>5.1用@RunWith(PowerMockRunner.class)代替@RunWith(MockitoJUnitRunner.class)<br>5.2添加类Annotation　- @PrepareForTest(VariableConfig.class)<br>5.3在运行被测试方法之前mock静态方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RunWith(PowerMockRunner.class)</span></span><br><span class="line"><span class="meta">@PrepareForTest(VariableConfig.class)</span>  <span class="comment">//VariableConfig是静态方法类</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">XxxTest</span> </span>&#123;</span><br><span class="line"> </span><br><span class="line">    <span class="meta">@Test</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">x</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="comment">//mock static method</span></span><br><span class="line">        PowerMockito.mockStatic(VariableConfig.class);</span><br><span class="line">        Mockito.when(VariableConfig.getSystemAdminId()).thenReturn(<span class="string">&quot;system&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h1 id="6-Mock返回值为void的方法"><a href="#6-Mock返回值为void的方法" class="headerlink" title="6.Mock返回值为void的方法"></a>6.Mock返回值为void的方法</h1><p>当单元测试的方法内部有void方法需要特殊处理(跳过或计算执行次数等)可以使用如下几种方法。</p>
+<p>case1：方法需要跳过，使用</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">doNothing().when(obj).method(params)</span><br></pre></td></tr></table></figure>
+
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">createKubernetesJob</span><span class="params">(Map&lt;String, Object&gt; params, Integer jobId, String jobName, String jobNamespace)</span> </span>&#123;</span><br><span class="line">        <span class="comment">//语句前后部分逻辑已略过, jobManager调用的方法会进到dao层内更新DB内数据，在sonar流水线扫描时，test case无法连接数据库，所以这个方法调用要跳过</span></span><br><span class="line">        jobManager.updateHelmDeployJobStatus(jobId, DeployStatusEnum.FAIL.getValue(), ErrorMessageConstants.B_HELM_01_000, <span class="string">&quot;create deploy job failed&quot;</span>);</span><br><span class="line"> </span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>jobManager.updateHelmDeployJobStatus方法会进到dao层内更新DB内数据，在sonar流水线扫描时，test case因为无法连接数据库卡住，所以这个方法调用要跳过<br>跳过方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">createKubernetesJob</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    doNothing().when(jobManager).updateHelmDeployJobStatus(Mockito.anyInt(), Mockito.anyInt(), Mockito.anyString(), Mockito.anyString());</span><br><span class="line">    <span class="comment">//......</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>这样既可跳过updateHelmDeployJobStatus方法的调用，单元测试时不会影响其他的代码逻辑。</p>
+<p>case2：方法无需跳过</p>
+<p>void方法无需跳过并且可以正常调用时，可以考虑不mock直接运行此方法。也可以使用verify验证void方法运行的次数。</p>
+<p>假如有一个UserService的updateUser的方法调用了UserDao持久层的 void update方法，可以在单测中使用如下语句验证语句执行次数为1：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">verify(userDao, times(<span class="number">1</span>)).update(user);</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+
+<p>case3：其他特殊场景<br>仍以case2中为例：</p>
+<p>当void方法抛出某种异常时希望跳过：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">doNothing().doThrow(<span class="keyword">new</span> DataAccessException()).when(userDao).save(user)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+
+<p>考虑 doCallRealMethod() 或  doAnser()：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">doCallRealMethod().when(mockObject).voidMethod();<span class="comment">//去调用其他方法</span></span><br><span class="line">doAnswer(answer).when(mockObject).voidMethod();</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+
+
+<h1 id="7-一份完整的测试例子："><a href="#7-一份完整的测试例子：" class="headerlink" title="7.一份完整的测试例子："></a>7.一份完整的测试例子：</h1><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">//测试目标</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> LoginResponse <span class="title">login</span><span class="params">(String name, String password, <span class="keyword">int</span> expires, String clientIp)</span> </span>&#123;</span><br><span class="line">        User user = accountPasswordValidator.validate(name, password, clientIp);</span><br><span class="line">        SessionDTO session = sessionService.create(user, expires);</span><br><span class="line"> </span><br><span class="line">        List&lt;UserOrganizationInfo&gt; userOrganizations = userOrganizationInfoRepository.findByUserId(user.getId());</span><br><span class="line">        List&lt;String&gt; organizationIds = userOrganizations.stream()</span><br><span class="line">                .map(UserOrganizationInfo::getOrganizationId)</span><br><span class="line">                .collect(Collectors.toList());</span><br><span class="line">        List&lt;Organization&gt; organizations = organizationRepository.findAllById(organizationIds);</span><br><span class="line"> </span><br><span class="line">        LoginResponse response = <span class="keyword">new</span> LoginResponse();</span><br><span class="line">        response.sessionId = session.id;</span><br><span class="line">        response.user = DTOConverterUtil.entityToDTO(user, UserDTO.class);</span><br><span class="line">        response.organizations = DTOConverterUtil.entityListToDTOList(organizations, BaseDTO.class);</span><br><span class="line"> </span><br><span class="line">        <span class="keyword">if</span> (user != <span class="keyword">null</span> &amp;&amp; user.getId().equals(VariableConfig.getSystemAdminId())) &#123;</span><br><span class="line">            response.isSuperAdmin = <span class="keyword">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line"> </span><br><span class="line">        <span class="keyword">return</span> response;</span><br><span class="line">    &#125;</span><br><span class="line">     </span><br><span class="line"><span class="comment">//测试用例</span></span><br><span class="line"> </span><br><span class="line"><span class="meta">@RunWith(PowerMockRunner.class)</span></span><br><span class="line"><span class="meta">@PrepareForTest(VariableConfig.class)</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AuthenticationServiceImplTest</span> </span>&#123;</span><br><span class="line"> </span><br><span class="line">    <span class="meta">@InjectMocks</span></span><br><span class="line">    <span class="keyword">private</span> AuthenticationServiceImpl authenticationService;</span><br><span class="line"> </span><br><span class="line">    <span class="meta">@Mock</span></span><br><span class="line">    <span class="keyword">private</span> OrganizationRepository organizationRepositoryMock;</span><br><span class="line"> </span><br><span class="line">    <span class="meta">@Test</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">login</span><span class="params">()</span> </span>&#123;</span><br><span class="line"> </span><br><span class="line">        String name = <span class="string">&quot;user&quot;</span>;</span><br><span class="line">        String password = <span class="string">&quot;passwd&quot;</span>;</span><br><span class="line">        String clientIp = <span class="string">&quot;192.168.0.1&quot;</span>;</span><br><span class="line">        <span class="keyword">int</span> expires = <span class="number">1000</span>;</span><br><span class="line">         </span><br><span class="line">        PowerMockito.mockStatic(VariableConfig.class);</span><br><span class="line">        Mockito.when(VariableConfig.getSystemAdminId()).thenReturn(<span class="string">&quot;system&quot;</span>);</span><br><span class="line"> </span><br><span class="line">        User user = DummyUtils.dummyCreate(User.class);</span><br><span class="line">        when(accountPasswordValidatorMock.validate(name, password, clientIp)).thenReturn(user);</span><br><span class="line"> </span><br><span class="line">        SessionDTO sessionDTO = DummyUtils.dummyCreate(SessionDTO.class);</span><br><span class="line">        BaseDTO&lt;String&gt; userDTO = DummyUtils.dummyCreate(BaseDTO.class);</span><br><span class="line">        userDTO.id = DummyUtils.randomStr(<span class="number">5</span>);</span><br><span class="line">        sessionDTO.user = userDTO;</span><br><span class="line">        BaseDTO&lt;String&gt; orgDTO = DummyUtils.dummyCreate(BaseDTO.class);</span><br><span class="line">        orgDTO.id = DummyUtils.randomStr(<span class="number">5</span>);</span><br><span class="line">        sessionDTO.workingOrganization = orgDTO;</span><br><span class="line">        when(sessionServiceMock.create(user, expires)).thenReturn(sessionDTO);</span><br><span class="line"> </span><br><span class="line">        List&lt;UserOrganizationInfo&gt; userOrganizationInfoList = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">        UserOrganizationInfo uoi1 = DummyUtils.dummyCreate(UserOrganizationInfo.class);</span><br><span class="line">        uoi1.setUserId(user.getId());</span><br><span class="line">        userOrganizationInfoList.add(uoi1);</span><br><span class="line">        UserOrganizationInfo uoi2 = DummyUtils.dummyCreate(UserOrganizationInfo.class);</span><br><span class="line">        uoi2.setUserId(user.getId());</span><br><span class="line">        userOrganizationInfoList.add(uoi2);</span><br><span class="line">        when(userOrganizationInfoRepositoryMock.findByUserId(user.getId())).thenReturn(userOrganizationInfoList);</span><br><span class="line"> </span><br><span class="line">        List&lt;Organization&gt; organizations = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">        Organization o1 = DummyUtils.dummyCreate(Organization.class);</span><br><span class="line">        o1.setId(uoi1.getOrganizationId());</span><br><span class="line">        organizations.add(o1);</span><br><span class="line">        Organization o2 = DummyUtils.dummyCreate(Organization.class);</span><br><span class="line">        o2.setId(uoi2.getOrganizationId());</span><br><span class="line">        organizations.add(o2);</span><br><span class="line">        when(organizationRepositoryMock.findAllById(Mockito.any(Iterable.class))).thenReturn(organizations);</span><br><span class="line"> </span><br><span class="line">        LoginResponse loginResponse = authenticationService.login(name, password, expires, clientIp);</span><br><span class="line"> </span><br><span class="line">        assertEquals(sessionDTO.id, loginResponse.sessionId);</span><br><span class="line">        assertNotNull(loginResponse.user);</span><br><span class="line">        assertNotNull(loginResponse.organizations);</span><br><span class="line">        assertEquals(<span class="number">2</span>, loginResponse.organizations.size());</span><br><span class="line"> </span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+
+
+<p>参考资料</p>
+<p><a target="_blank" rel="noopener" href="https://static.javadoc.io/org.mockito/mockito-core/2.27.0/org/mockito/Mockito.html">https://static.javadoc.io/org.mockito/mockito-core/2.27.0/org/mockito/Mockito.html</a><br><a target="_blank" rel="noopener" href="https://www.springboottutorial.com/spring-boot-unit-testing-and-mocking-with-mockito-and-junit">https://www.springboottutorial.com/spring-boot-unit-testing-and-mocking-with-mockito-and-junit</a><br><a target="_blank" rel="noopener" href="https://github.com/powermock/powermock/wiki/Mockito#mockito-mock-maker-inline">https://github.com/powermock/powermock/wiki/Mockito#mockito-mock-maker-inline</a></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E9%9A%8F%E7%AC%94%E8%AE%B0%E5%BD%95/" rel="tag"># 随笔记录</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/2020/08/16/note-3/" rel="prev" title="Sonar扫描项目时遇到的常见的bug以及解决方式">
+                  <i class="fa fa-chevron-left"></i> Sonar扫描项目时遇到的常见的bug以及解决方式
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/2020/08/16/note-5/" rel="next" title="Cookie Session SessionId">
+                  Cookie Session SessionId <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+      
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      const activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      const commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+      
+
+      
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Stephen Jia</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.js.org/muse/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> 强力驱动
+  </div>
+
+    </div>
+  </footer>
+
+  
+  <script src="//cdn.jsdelivr.net/npm/animejs@3.2.0/lib/anime.min.js"></script>
+<script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
