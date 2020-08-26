@@ -167,6 +167,75 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://jiazx.top/2020/08/16/note-3/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Stephen Jia">
+      <meta itemprop="description" content="Try Everything......">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="J Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/08/16/note-3/" class="post-title-link" itemprop="url">Sonar扫描项目时遇到的常见的bug以及解决方式</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-08-16 17:44:20 / 修改时间：17:47:17" itemprop="dateCreated datePublished" datetime="2020-08-16T17:44:20+08:00">2020-08-16</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="1-使用了Integer-valueOf-String-s"><a href="#1-使用了Integer-valueOf-String-s" class="headerlink" title="1.使用了Integer.valueOf(String s)"></a>1.使用了Integer.valueOf(String s)</h1><p>这个bug是非常常见的bug扫描中会出现的问题。原因在于什么呢？<br>先看Integer.valueOf(s)方法的源码：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Integer <span class="title">valueOf</span><span class="params">(String s)</span> <span class="keyword">throws</span> NumberFormatException </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> Integer.valueOf(parseInt(s, <span class="number">10</span>));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>再看Integer.parseInt()的:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> <span class="title">parseInt</span><span class="params">(String s, <span class="keyword">int</span> radix)</span></span></span><br><span class="line"><span class="function">            <span class="keyword">throws</span> NumberFormatException</span></span><br><span class="line"><span class="function"></span>&#123;...方法实现略...&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>可以看到两个方法的区别：<br>Integer.valueOf()是先拿到了Integer.parseInt()的int类型的数值，然后再转换为了Integer类型的包装类。<br>而Integer.parseInt()就是二话不说，直接开始转换为int，所以，当你想要在代码中拿到一个整形的数值，而<strong>不关心它是否是包装类时</strong>，请使用Integer.parseInt()来减少一层包装类的装箱提高效率。</p>
+<h1 id="2-子类和父类都直接使用了lombok的-Data注解"><a href="#2-子类和父类都直接使用了lombok的-Data注解" class="headerlink" title="2.子类和父类都直接使用了lombok的@Data注解"></a>2.子类和父类都直接使用了lombok的@Data注解</h1><p>这样做的问题是:使用了@Data注解不仅会生成getter和setter方法，还会自动生成equals方法，而@Data自动生成的equals方法中，有一个instance of方法的判断，意思是如果 被比较的对象 instance of 此类 不成立的话，那么直接返回false，这样做的问题是，如果子类和父类的对象属性相同，那么 子类对象.equals(父类对象)就会返回false，但是 父类对象.equals(子类对象)会返回true，这样显然破坏了equals的不对等性，我们可以这样来手动修改子类的equals方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">   <span class="meta">@Override</span></span><br><span class="line">   <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">equals</span><span class="params">(Object obj)</span></span>&#123;</span><br><span class="line">子类 son = (子类) obj; <span class="comment">//强转为子类对象</span></span><br><span class="line"><span class="keyword">return</span> <span class="keyword">super</span>.equals(obj) &amp;&amp; 子类对象独特的属性.equals(obj.get此属性) &amp;&amp; 子类对象独特基本类型属性 == obj.get此属性......</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h1 id="3-xxx-getXxx-equals-“str”"><a href="#3-xxx-getXxx-equals-“str”" class="headerlink" title="3.xxx.getXxx().equals(“str”):"></a>3.xxx.getXxx().equals(“str”):</h1><p>这样的写法往往是不好的习惯，因为equals前面的对象获取不到会直接空指针异常，所以最好是将二者互换位置，当getXxx为null时返回false而不是抛出异常。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://jiazx.top/2020/08/16/note-2/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -856,102 +925,6 @@ public void MyUnLock()&#123;
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://jiazx.top/2020/08/16/job-1/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Stephen Jia">
-      <meta itemprop="description" content="Try Everything......">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="J Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/08/16/job-1/" class="post-title-link" itemprop="url">Java常见面试题记录一：volatile关键字</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2020-08-16 17:21:10 / 修改时间：17:21:42" itemprop="dateCreated datePublished" datetime="2020-08-16T17:21:10+08:00">2020-08-16</time>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>说到volatile关键字，第一反应就是三点：</p>
-<ul>
-<li>保证可见性</li>
-<li>不保证原子性</li>
-<li>禁止指令重排</li>
-</ul>
-<p><strong>概括：它是java虚拟机提供的一个轻量级的同步机制，基本上遵守了jmm的规范，它保证可见性，不保证原子性，保证有序性。</strong></p>
-<p>下面将一一展开学习volatile关键字的使用及原理：</p>
-<h1 id="可见性"><a href="#可见性" class="headerlink" title="可见性"></a>可见性</h1><h2 id="JMM：java内存模型"><a href="#JMM：java内存模型" class="headerlink" title="JMM：java内存模型"></a>JMM：java内存模型</h2><p>JMM(<strong>Java内存模型</strong>Java Memory Model)本身是一种抽象的概念 <strong>并不真实存在</strong>,它描述的是一组规则或规范通过规范定制了程序中各个变量(包括实例字段,静态字段和构成数组对象的元素)的访问方式.<br>JMM关于同步规定:</p>
-<p>1.线程解锁前,必须把共享变量的值刷新回主内存<br>2.线程加锁前,必须读取主内存的最新值到自己的工作内存<br>3.加锁解锁是同一把锁</p>
-<p>由于JVM运行程序的实体是线程,而每个线程创建时JVM都会为其创建一个工作内存(有些地方成为栈空间),工作内存是每个线程的私有数据区域,而Java内存模型中规定所有变量都存储在<strong>主内存,**主内存是共享内存区域,所有线程都可访问,但线程对变量的操作(读取赋值等)必须在工作内存中进行,**首先要将变量从主内存拷贝到自己的工作空间,然后对变量进行操作,操作完成再将变量写回主内存,不能直接操作主内存中的变量,各个线程中的工作内存储存着主内存中的变量副本拷贝,因此不同的线程无法访问对方的工作内存,线程间的通讯(传值) 必须通过主内存来完成</strong>,其简要访问过程如下图:<br><img src="https://img-blog.csdnimg.cn/20200210180827677.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzMxMzE0MTQx,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"></p>
-<p>通过上图，可以一句话总结可见性，可见性就是指：某一个线程将内存中共享变量修改后并将主内存中的变量更新，但是其他线程如果没有被通知的话，使用的仍然是更新前变量的副本。这就造成了可见性的问题。<strong>如果一个线程修改了共享变量，可以第一时间通知其他线程修改各自内存中的值，那么就可以保证可见性</strong>。</p>
-<p>下面是volatile保证可见性的示例：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">seekByVolatile</span><span class="params">()</span></span>&#123;</span><br><span class="line">        Data data = <span class="keyword">new</span> Data();</span><br><span class="line">        <span class="keyword">new</span> Thread(() -&gt; &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                Thread.sleep(<span class="number">100</span>);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                e.printStackTrace();</span><br><span class="line">            &#125;</span><br><span class="line">            data.changeNum();</span><br><span class="line">            System.out.println(<span class="string">&quot;线程A已经将data.num修改为10&quot;</span>);</span><br><span class="line">        &#125;, <span class="string">&quot;A&quot;</span>).start();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">while</span>(data.num == <span class="number">0</span>)&#123;</span><br><span class="line">            <span class="comment">//直到main线程里面的num不为0时，才跳出循环</span></span><br><span class="line">        &#125;</span><br><span class="line">        System.out.println(<span class="string">&quot;结束,且main中num为&quot;</span>+ data.num);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Data</span></span>&#123;</span><br><span class="line">    <span class="keyword">volatile</span> <span class="keyword">int</span> num = <span class="number">0</span>;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">changeNum</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.num = <span class="number">10</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>运行<code>seekByVolatile()</code>：<br>当Data类内的num加了volatile关键字时，输出为  </p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">线程A已经将data.num修改为<span class="number">10</span></span><br><span class="line">结束,且main中num为<span class="number">10</span></span><br></pre></td></tr></table></figure>
-<p>可以知道main线程对其他线程的变量修改有可见性。<br>如果没有加上volatile：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">线程A已经将data.num修改为<span class="number">10</span></span><br><span class="line"><span class="comment">//......main线程一直未结束</span></span><br></pre></td></tr></table></figure>
-<p>可以知道没有volatile确实保证了可见性。</p>
-<h1 id="原子性"><a href="#原子性" class="headerlink" title="原子性"></a>原子性</h1><p>volatile不保证原子性就是指在多个线程对数据进行写操作的时候，先改变完数据的线程会因为可见性而通知其他线程更改自身内存中的数据，从而使自身的运行被打断，无法将自身线程工作的数据转存到总内存中。</p>
-<p>jmm的原子性就是要保证每个线程内的运行操作数据的过程要么同时成功，要么同时失败。</p>
-<p>例子如下，20个线程，每个线程将Data类中的num加一千次1，最后的结果应该是20000：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">plusByVolatile</span><span class="params">()</span></span>&#123;</span><br><span class="line">        Data data = <span class="keyword">new</span> Data();</span><br><span class="line">        ExecutorService service = Executors.newCachedThreadPool();</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">20</span>; i++) &#123;</span><br><span class="line">            service.execute(() -&gt;&#123;</span><br><span class="line">                <span class="comment">//原子性体现为，在一个线程加这一千次的时候，这个线程加的1000执行要么都成功，要么都失败，并且不能让其他线程干扰。</span></span><br><span class="line">                <span class="keyword">for</span> (<span class="keyword">int</span> j = <span class="number">0</span>; j &lt; <span class="number">1000</span>; j++) &#123;</span><br><span class="line">                    data.plusPlus();</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">//等到其他线程都执行完，才执行main</span></span><br><span class="line"><span class="comment">//        while(Thread.activeCount() &gt; 2)&#123;</span></span><br><span class="line"><span class="comment">//            Thread.yield();</span></span><br><span class="line"><span class="comment">//        &#125;</span></span><br><span class="line">        service.shutdown();</span><br><span class="line"><span class="comment">//        System.out.println(&quot;最终的num为&quot; + data.num);</span></span><br><span class="line">        System.out.println(<span class="string">&quot;最终的num为&quot;</span> + data.atomicInteger);</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Data</span></span>&#123;</span><br><span class="line">    <span class="keyword">volatile</span> <span class="keyword">int</span> num = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">    AtomicInteger atomicInteger = <span class="keyword">new</span> AtomicInteger();</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">plusPlus</span><span class="params">()</span></span>&#123;</span><br><span class="line"><span class="comment">//        num++;</span></span><br><span class="line">        atomicInteger.getAndIncrement();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>如果，仅仅加了volatile关键字，那么每次运行的结果都不会到20000.</p>
-<p>例子中已经给出了解决方案：<br>如何解决原子性问题？<br>1.synchronized（不再赘述）<br>2.应用atomic中的atomicInteger类（保证原子性）配合volatile进行修改。</p>
-<h1 id="禁止指令重排"><a href="#禁止指令重排" class="headerlink" title="禁止指令重排"></a>禁止指令重排</h1><p>指令重排：因为java多线程环境下，默认会有指令重排的现象存在：<br>比如：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">mySort</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> x=<span class="number">11</span>;<span class="comment">//语句1</span></span><br><span class="line">    <span class="keyword">int</span> y=<span class="number">12</span>;<span class="comment">//语句2</span></span><br><span class="line">    x=x+<span class="number">5</span>;<span class="comment">//语句3</span></span><br><span class="line">    y=x*x;<span class="comment">//语句4</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-<p>上面语句执行的顺序经过重排后可能会变成：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1234</span>（正常）</span><br><span class="line"><span class="number">2134</span></span><br><span class="line"><span class="number">1324</span></span><br><span class="line">问题:</span><br><span class="line">请问语句<span class="number">4</span> 可以重排后变成第一条码?</span><br><span class="line">不可以，存在数据的依赖性，x和y没有初始化，没办法排到第一个</span><br></pre></td></tr></table></figure>
-<p>下面再举一个例子：<br><img src="https://img-blog.csdnimg.cn/20200210220137915.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzMxMzE0MTQx,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br>如果多线程情况下， 1、2可能出现指令重排。正常情况下方法2打印a为6，但是重排后，flag=true排到了前面，另一个线程拿到flag打印a为5。</p>
-<h1 id="在哪些地方用到过volatile"><a href="#在哪些地方用到过volatile" class="headerlink" title="在哪些地方用到过volatile?"></a>在哪些地方用到过volatile?</h1><p>1.读写锁中手写缓存demo    //TODO<br>2.DCL单例模式（禁止指令重排的应用）<br>之前写过的优化好的synchronized单例模式：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Singleton</span></span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="title">Singleton</span><span class="params">()</span></span>&#123;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//加上volatile关键字！！！！！！！防止指令重排</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">volatile</span> Singleton singleton = <span class="keyword">null</span>;</span><br><span class="line">    </span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> Singleton <span class="title">getInstance</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">if</span>(instance == <span class="keyword">null</span>)&#123;</span><br><span class="line">            <span class="keyword">synchronized</span>(Singleton.class)&#123;</span><br><span class="line">                <span class="keyword">if</span>(instance == <span class="keyword">null</span>)&#123;</span><br><span class="line">                    instance = <span class="keyword">new</span> Singleton();<span class="comment">//因为指令重排，线程B运行到这里但是还没有初始化完成。有引用但是没有对象。</span></span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> instance;<span class="comment">//线程A执行到这里，有概率返回的是null。</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-<p>这个代码其实也是有问题的，不能解决指令重排问题！但是概率很低。</p>
-<p>DCL(双端检锁) 机制不一定线程安全,原因是有指令重排的存在,加入volatile可以禁止指令重排<br>  <strong>原因在于某一个线程在执行到第一次检测,读取到的instance不为null时,instance的引用对象可能没有完成初始化.</strong></p>
-<p>instance=new SingletonDem(); 可以分为以下步骤(伪代码)</p>
-<p>memory=allocate();//1.分配对象内存空间<br>instance(memory);//2.初始化对象<br>instance=memory;//3.设置instance的指向刚分配的内存地址,此时instance!=null </p>
-<p><strong>步骤2和步骤3不存在数据依赖关系</strong>.而且无论重排前还是重排后程序执行的结果在单线程中并没有改变,<strong>因此这种重排优化是允许的</strong>.<br>memory=allocate();//1.分配对象内存空间<br>instance=memory;//3.设置instance的指向刚分配的内存地址,此时instance!=null 但对象还没有初始化完.<br>instance(memory);//2.初始化对象<br>但是指令重排只会保证串行语义的执行一致性(单线程) 并不会关心多线程间的语义一致性<br>所以当一条线程访问instance不为null时,由于instance实例未必完成初始化,也就造成了线程安全问题.</p>
-<p><strong>所以面试官要让写线程安全的单例模式的时候，单例对象的声明最好要加上volatile关键字，这样比较严谨.</strong></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1021,7 +994,7 @@ public void MyUnLock()&#123;
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">41</span>
+          <span class="site-state-item-count">42</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
