@@ -20,20 +20,20 @@
     var CONFIG = {"hostname":"jiazx.top","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"always","padding":18,"offset":12,"onmobile":true},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
-  <meta name="description" content="第一个问题：MYSQL的视图是什么？视图的概念视图的本质其实就是一个虚拟的表。是由查询操作定义的虚拟表，它并不在数据库中实际存储，在用这个视图的时候它实时生成。 视图的作用1.提高了频繁查询表里面某些字段的简便性。例子：有三个表user : id, name, ageproduct: id, price中间关系表mid: id, user_id, product_id比如user表里面经常去查询n">
+  <meta name="description" content="参考资料：  《深入理解Java虚拟机——JVM高级特性与最佳实践》－周志明各种垃圾收集器的理解所谓的引用计数法，复制算法，标记清除，标记整理算法都是垃圾收集的相关的概念，垃圾收集器则是对垃圾收集算法的具体实现  Serial收集器简单高效的新生代收集器，现仍用于Client模式下的垃圾收集。它是单线程的收集器(顾名思义串行的)，虽然它在进行垃圾收集时会暂停其他用户线程，但是在用户的Client端">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Java常见面试题记录七：MySQL视图，联合索引，索引失效">
-<meta property="og:url" content="http://jiazx.top/2020/08/16/job-7/index.html">
+<meta property="og:title" content="JVM学习笔记四：各种垃圾收集器的理解">
+<meta property="og:url" content="http://jiazx.top/2020/08/27/jvm-4/index.html">
 <meta property="og:site_name" content="J Blog">
-<meta property="og:description" content="第一个问题：MYSQL的视图是什么？视图的概念视图的本质其实就是一个虚拟的表。是由查询操作定义的虚拟表，它并不在数据库中实际存储，在用这个视图的时候它实时生成。 视图的作用1.提高了频繁查询表里面某些字段的简便性。例子：有三个表user : id, name, ageproduct: id, price中间关系表mid: id, user_id, product_id比如user表里面经常去查询n">
+<meta property="og:description" content="参考资料：  《深入理解Java虚拟机——JVM高级特性与最佳实践》－周志明各种垃圾收集器的理解所谓的引用计数法，复制算法，标记清除，标记整理算法都是垃圾收集的相关的概念，垃圾收集器则是对垃圾收集算法的具体实现  Serial收集器简单高效的新生代收集器，现仍用于Client模式下的垃圾收集。它是单线程的收集器(顾名思义串行的)，虽然它在进行垃圾收集时会暂停其他用户线程，但是在用户的Client端">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2020-08-16T09:23:49.000Z">
-<meta property="article:modified_time" content="2020-08-27T01:26:37.904Z">
+<meta property="article:published_time" content="2020-08-27T02:15:04.000Z">
+<meta property="article:modified_time" content="2020-08-27T02:15:27.598Z">
 <meta property="article:author" content="Stephen Jia">
-<meta property="article:tag" content="面试题集锦">
+<meta property="article:tag" content="java虚拟机">
 <meta name="twitter:card" content="summary">
 
-<link rel="canonical" href="http://jiazx.top/2020/08/16/job-7/">
+<link rel="canonical" href="http://jiazx.top/2020/08/27/jvm-4/">
 
 
 <script id="page-configurations">
@@ -46,7 +46,7 @@
   };
 </script>
 
-  <title>Java常见面试题记录七：MySQL视图，联合索引，索引失效 | J Blog</title>
+  <title>JVM学习笔记四：各种垃圾收集器的理解 | J Blog</title>
   
 
 
@@ -171,7 +171,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://jiazx.top/2020/08/16/job-7/">
+    <link itemprop="mainEntityOfPage" href="http://jiazx.top/2020/08/27/jvm-4/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -184,7 +184,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          Java常见面试题记录七：MySQL视图，联合索引，索引失效
+          JVM学习笔记四：各种垃圾收集器的理解
         </h1>
 
         <div class="post-meta">
@@ -193,16 +193,10 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
+              
 
-              <time title="创建时间：2020-08-16 17:23:49" itemprop="dateCreated datePublished" datetime="2020-08-16T17:23:49+08:00">2020-08-16</time>
+              <time title="创建时间：2020-08-27 10:15:04 / 修改时间：10:15:27" itemprop="dateCreated datePublished" datetime="2020-08-27T10:15:04+08:00">2020-08-27</time>
             </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2020-08-27 09:26:37" itemprop="dateModified" datetime="2020-08-27T09:26:37+08:00">2020-08-27</time>
-              </span>
 
           
 
@@ -215,16 +209,17 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h1 id="第一个问题：MYSQL的视图是什么？"><a href="#第一个问题：MYSQL的视图是什么？" class="headerlink" title="第一个问题：MYSQL的视图是什么？"></a>第一个问题：MYSQL的视图是什么？</h1><h2 id="视图的概念"><a href="#视图的概念" class="headerlink" title="视图的概念"></a>视图的概念</h2><p>视图的本质其实就是一个虚拟的表。<strong>是由查询操作定义的虚拟表</strong>，它并不在数据库中实际存储，在用这个视图的时候它实时生成。</p>
-<h2 id="视图的作用"><a href="#视图的作用" class="headerlink" title="视图的作用"></a>视图的作用</h2><p>1.提高了频繁查询表里面某些字段的简便性。<br>例子：有三个表<br>user : id, name, age<br>product: id, price<br>中间关系表mid: id, user_id, product_id<br>比如user表里面经常去查询name,和product的name。那么就可以去<strong>创建视图</strong>：<br>create view test as select u.name as uname, p.name as pname from user as u, product as p, mid as m where u.id = m.user_id and p.id = m.product_id;</p>
-<p>使用的时候，直接<br>select * from test;<br>即可查询出视图。</p>
-<p>2.可以方便的用简单的sql从不同表中进行复杂查询</p>
-<p>总结：如果用来查询的<strong>SQL非常复杂或者冗长</strong>，那么就可以将这个查询语句创建成为一个视图，下次<strong>重用</strong>会非常方便，而且不必知道这个查询语句的细节。</p>
-<h1 id="第二个问题：联合索引的b-树实现？"><a href="#第二个问题：联合索引的b-树实现？" class="headerlink" title="第二个问题：联合索引的b+树实现？"></a>第二个问题：联合索引的b+树实现？</h1><p>按照创建索引的最左边的索引列进行b+树的建立，建立的时候先按照最左列排序，然后按顺序从左到右排序去建立b+树。</p>
-<h1 id="第三个问题：什么时候索引会失效？"><a href="#第三个问题：什么时候索引会失效？" class="headerlink" title="第三个问题：什么时候索引会失效？"></a>第三个问题：什么时候索引会失效？</h1><p>1.根据索引列查询时带上了not null条件，也就是设计时索引列没有加非空条件。</p>
-<p>2.当条件为not时的查询，索引可以解决<strong>我要找哪些数据</strong>，不擅长解决<strong>我不要找哪些数据</strong>。</p>
-<p>3.模糊查询时的前置通配符。</p>
-<p>4.联合索引在没有使用到第一列索引的时候会失效。</p>
+        <p>参考资料：</p>
+<ul>
+<li>《深入理解Java虚拟机——JVM高级特性与最佳实践》－周志明<h1 id="各种垃圾收集器的理解"><a href="#各种垃圾收集器的理解" class="headerlink" title="各种垃圾收集器的理解"></a>各种垃圾收集器的理解</h1>所谓的引用计数法，复制算法，标记清除，标记整理算法都是垃圾收集的相关的概念，垃圾收集器则是对垃圾收集算法的具体实现</li>
+</ul>
+<h2 id="Serial收集器"><a href="#Serial收集器" class="headerlink" title="Serial收集器"></a>Serial收集器</h2><p>简单高效的新生代收集器，现仍用于Client模式下的垃圾收集。它是单线程的收集器(顾名思义串行的)，虽然它在进行垃圾收集时会暂停其他用户线程，但是在用户的Client端，一般应用程序的虚拟机不会很大，所以使用serial收集器足够使用了，Client不会感觉到明显的卡顿。</p>
+<h2 id="ParNew收集器"><a href="#ParNew收集器" class="headerlink" title="ParNew收集器"></a>ParNew收集器</h2><p>可以看做Serial收集器的多线程版本，同样使用复制算法，也是新生代的收集器，适合多核cpu使用，单核cpu更适合Serial收集器</p>
+<h2 id="Parallel-Scavenge收集器-jdk8默认新生代"><a href="#Parallel-Scavenge收集器-jdk8默认新生代" class="headerlink" title="Parallel Scavenge收集器(jdk8默认新生代)"></a>Parallel Scavenge收集器(jdk8默认新生代)</h2><p>同样是使用复制算法的多线程新生代收集器，特点为可以达到一个可控制的吞吐量，开启自动化的控制吞吐机制：<br>-XX:+UseAdaptiveSizePolicy<br>使用命令可以自动化的控制新生代各个区域比例，老年代的晋升年龄等等来适配吞吐量大小。（至于Parallel Scavenge默认和Serial Old配合使用还是Parallel Old使用，有争议，一般1.6之前为Serial Old，之后如果为多核cpu一般为Parallel Old）</p>
+<h2 id="Serial-Old收集器"><a href="#Serial-Old收集器" class="headerlink" title="Serial Old收集器"></a>Serial Old收集器</h2><p>采用标记整理算法的单线程老年代收集器，在老版本(1.5及之前和Parallel Scavenge收集器一起使用)</p>
+<h2 id="Parallel-Old收集器"><a href="#Parallel-Old收集器" class="headerlink" title="Parallel Old收集器"></a>Parallel Old收集器</h2><p>采用标记整理算法的多线程老年代收集器，1.6之后通常和Parallel Scavenge一起使用。</p>
+<h2 id="CMS收集器"><a href="#CMS收集器" class="headerlink" title="CMS收集器"></a>CMS收集器</h2><p>并发收集，低停顿的收集器，采用标记清除算法。虽然会产生内存碎片，但是也会提高效率，达到并发低停顿。</p>
+<h2 id="G1收集器"><a href="#G1收集器" class="headerlink" title="G1收集器"></a>G1收集器</h2><p>标记整理-复制算法，是新生代和老年代通用的并发收集器。利用GC Root可达性分析来计算需要回收的对象。标记期间不暂停用户线程，但是还有一步最终标记，寻找可达性分析算法并发运行时没有扫到的新对象合并到要回收的对象set中，最后进行回收。</p>
 
     </div>
 
@@ -234,7 +229,7 @@
 
       <footer class="post-footer">
           <div class="post-tags">
-              <a href="/tags/%E9%9D%A2%E8%AF%95%E9%A2%98%E9%9B%86%E9%94%A6/" rel="tag"># 面试题集锦</a>
+              <a href="/tags/java%E8%99%9A%E6%8B%9F%E6%9C%BA/" rel="tag"># java虚拟机</a>
           </div>
 
         
@@ -243,13 +238,10 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2020/08/16/job-6/" rel="prev" title="Java常见面试题记录六：JVM垃圾回收的机制？垃圾回收器的介绍？">
-      <i class="fa fa-chevron-left"></i> Java常见面试题记录六：JVM垃圾回收的机制？垃圾回收器的介绍？
+    <a href="/2020/08/26/job-8/" rel="prev" title="Java常见面试题记录八：绿盟科技一面">
+      <i class="fa fa-chevron-left"></i> Java常见面试题记录八：绿盟科技一面
     </a></div>
-      <div class="post-nav-item">
-    <a href="/2020/08/16/bug-1/" rel="next" title="踩坑记录一：Maven导入插件can't reslove xxx plugin">
-      踩坑记录一：Maven导入插件can't reslove xxx plugin <i class="fa fa-chevron-right"></i>
-    </a></div>
+      <div class="post-nav-item"></div>
     </div>
       </footer>
     
@@ -308,7 +300,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%AC%AC%E4%B8%80%E4%B8%AA%E9%97%AE%E9%A2%98%EF%BC%9AMYSQL%E7%9A%84%E8%A7%86%E5%9B%BE%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="nav-number">1.</span> <span class="nav-text">第一个问题：MYSQL的视图是什么？</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A7%86%E5%9B%BE%E7%9A%84%E6%A6%82%E5%BF%B5"><span class="nav-number">1.1.</span> <span class="nav-text">视图的概念</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A7%86%E5%9B%BE%E7%9A%84%E4%BD%9C%E7%94%A8"><span class="nav-number">1.2.</span> <span class="nav-text">视图的作用</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%AC%AC%E4%BA%8C%E4%B8%AA%E9%97%AE%E9%A2%98%EF%BC%9A%E8%81%94%E5%90%88%E7%B4%A2%E5%BC%95%E7%9A%84b-%E6%A0%91%E5%AE%9E%E7%8E%B0%EF%BC%9F"><span class="nav-number">2.</span> <span class="nav-text">第二个问题：联合索引的b+树实现？</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%AC%AC%E4%B8%89%E4%B8%AA%E9%97%AE%E9%A2%98%EF%BC%9A%E4%BB%80%E4%B9%88%E6%97%B6%E5%80%99%E7%B4%A2%E5%BC%95%E4%BC%9A%E5%A4%B1%E6%95%88%EF%BC%9F"><span class="nav-number">3.</span> <span class="nav-text">第三个问题：什么时候索引会失效？</span></a></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%90%84%E7%A7%8D%E5%9E%83%E5%9C%BE%E6%94%B6%E9%9B%86%E5%99%A8%E7%9A%84%E7%90%86%E8%A7%A3"><span class="nav-number">1.</span> <span class="nav-text">各种垃圾收集器的理解</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Serial%E6%94%B6%E9%9B%86%E5%99%A8"><span class="nav-number">1.1.</span> <span class="nav-text">Serial收集器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ParNew%E6%94%B6%E9%9B%86%E5%99%A8"><span class="nav-number">1.2.</span> <span class="nav-text">ParNew收集器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Parallel-Scavenge%E6%94%B6%E9%9B%86%E5%99%A8-jdk8%E9%BB%98%E8%AE%A4%E6%96%B0%E7%94%9F%E4%BB%A3"><span class="nav-number">1.3.</span> <span class="nav-text">Parallel Scavenge收集器(jdk8默认新生代)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Serial-Old%E6%94%B6%E9%9B%86%E5%99%A8"><span class="nav-number">1.4.</span> <span class="nav-text">Serial Old收集器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Parallel-Old%E6%94%B6%E9%9B%86%E5%99%A8"><span class="nav-number">1.5.</span> <span class="nav-text">Parallel Old收集器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#CMS%E6%94%B6%E9%9B%86%E5%99%A8"><span class="nav-number">1.6.</span> <span class="nav-text">CMS收集器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#G1%E6%94%B6%E9%9B%86%E5%99%A8"><span class="nav-number">1.7.</span> <span class="nav-text">G1收集器</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 

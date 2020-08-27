@@ -167,6 +167,75 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://jiazx.top/2020/08/27/jvm-4/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Stephen Jia">
+      <meta itemprop="description" content="Try Everything......">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="J Blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2020/08/27/jvm-4/" class="post-title-link" itemprop="url">JVM学习笔记四：各种垃圾收集器的理解</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-08-27 10:15:04 / 修改时间：10:15:27" itemprop="dateCreated datePublished" datetime="2020-08-27T10:15:04+08:00">2020-08-27</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>参考资料：</p>
+<ul>
+<li>《深入理解Java虚拟机——JVM高级特性与最佳实践》－周志明<h1 id="各种垃圾收集器的理解"><a href="#各种垃圾收集器的理解" class="headerlink" title="各种垃圾收集器的理解"></a>各种垃圾收集器的理解</h1>所谓的引用计数法，复制算法，标记清除，标记整理算法都是垃圾收集的相关的概念，垃圾收集器则是对垃圾收集算法的具体实现</li>
+</ul>
+<h2 id="Serial收集器"><a href="#Serial收集器" class="headerlink" title="Serial收集器"></a>Serial收集器</h2><p>简单高效的新生代收集器，现仍用于Client模式下的垃圾收集。它是单线程的收集器(顾名思义串行的)，虽然它在进行垃圾收集时会暂停其他用户线程，但是在用户的Client端，一般应用程序的虚拟机不会很大，所以使用serial收集器足够使用了，Client不会感觉到明显的卡顿。</p>
+<h2 id="ParNew收集器"><a href="#ParNew收集器" class="headerlink" title="ParNew收集器"></a>ParNew收集器</h2><p>可以看做Serial收集器的多线程版本，同样使用复制算法，也是新生代的收集器，适合多核cpu使用，单核cpu更适合Serial收集器</p>
+<h2 id="Parallel-Scavenge收集器-jdk8默认新生代"><a href="#Parallel-Scavenge收集器-jdk8默认新生代" class="headerlink" title="Parallel Scavenge收集器(jdk8默认新生代)"></a>Parallel Scavenge收集器(jdk8默认新生代)</h2><p>同样是使用复制算法的多线程新生代收集器，特点为可以达到一个可控制的吞吐量，开启自动化的控制吞吐机制：<br>-XX:+UseAdaptiveSizePolicy<br>使用命令可以自动化的控制新生代各个区域比例，老年代的晋升年龄等等来适配吞吐量大小。（至于Parallel Scavenge默认和Serial Old配合使用还是Parallel Old使用，有争议，一般1.6之前为Serial Old，之后如果为多核cpu一般为Parallel Old）</p>
+<h2 id="Serial-Old收集器"><a href="#Serial-Old收集器" class="headerlink" title="Serial Old收集器"></a>Serial Old收集器</h2><p>采用标记整理算法的单线程老年代收集器，在老版本(1.5及之前和Parallel Scavenge收集器一起使用)</p>
+<h2 id="Parallel-Old收集器"><a href="#Parallel-Old收集器" class="headerlink" title="Parallel Old收集器"></a>Parallel Old收集器</h2><p>采用标记整理算法的多线程老年代收集器，1.6之后通常和Parallel Scavenge一起使用。</p>
+<h2 id="CMS收集器"><a href="#CMS收集器" class="headerlink" title="CMS收集器"></a>CMS收集器</h2><p>并发收集，低停顿的收集器，采用标记清除算法。虽然会产生内存碎片，但是也会提高效率，达到并发低停顿。</p>
+<h2 id="G1收集器"><a href="#G1收集器" class="headerlink" title="G1收集器"></a>G1收集器</h2><p>标记整理-复制算法，是新生代和老年代通用的并发收集器。利用GC Root可达性分析来计算需要回收的对象。标记期间不暂停用户线程，但是还有一步最终标记，寻找可达性分析算法并发运行时没有扫到的新对象合并到要回收的对象set中，最后进行回收。</p>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://jiazx.top/2020/08/26/job-8/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -181,7 +250,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/2020/08/26/job-8/" class="post-title-link" itemprop="url">job-8</a>
+            <a href="/2020/08/26/job-8/" class="post-title-link" itemprop="url">Java常见面试题记录八：绿盟科技一面</a>
         </h2>
 
         <div class="post-meta">
@@ -190,10 +259,16 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2020-08-26 16:48:41 / 修改时间：17:27:51" itemprop="dateCreated datePublished" datetime="2020-08-26T16:48:41+08:00">2020-08-26</time>
+              <time title="创建时间：2020-08-26 16:48:41" itemprop="dateCreated datePublished" datetime="2020-08-26T16:48:41+08:00">2020-08-26</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-08-27 10:28:02" itemprop="dateModified" datetime="2020-08-27T10:28:02+08:00">2020-08-27</time>
+              </span>
 
           
 
@@ -206,8 +281,46 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h1 id="绿盟科技提前批一面难点"><a href="#绿盟科技提前批一面难点" class="headerlink" title="绿盟科技提前批一面难点"></a>绿盟科技提前批一面难点</h1><h2 id="1-堆排序的思路？"><a href="#1-堆排序的思路？" class="headerlink" title="1.堆排序的思路？"></a>1.堆排序的思路？</h2><h2 id="2-平衡二叉树的概念，查找时间复杂度"><a href="#2-平衡二叉树的概念，查找时间复杂度" class="headerlink" title="2.平衡二叉树的概念，查找时间复杂度"></a>2.平衡二叉树的概念，查找时间复杂度</h2><h2 id="3-项目上线OOM问题如何排查？"><a href="#3-项目上线OOM问题如何排查？" class="headerlink" title="3.项目上线OOM问题如何排查？"></a>3.项目上线OOM问题如何排查？</h2><h2 id="4-Callable方式，如何防止线程无限期执行或执行时间过长？"><a href="#4-Callable方式，如何防止线程无限期执行或执行时间过长？" class="headerlink" title="4.Callable方式，如何防止线程无限期执行或执行时间过长？"></a>4.Callable方式，如何防止线程无限期执行或执行时间过长？</h2><h2 id="5-三个线程执行完一个任务，去执行下一个任务，如何实现？"><a href="#5-三个线程执行完一个任务，去执行下一个任务，如何实现？" class="headerlink" title="5.三个线程执行完一个任务，去执行下一个任务，如何实现？"></a>5.三个线程执行完一个任务，去执行下一个任务，如何实现？</h2><h2 id="6-四次挥手的time-wait发生在哪里？为什么要time-wait"><a href="#6-四次挥手的time-wait发生在哪里？为什么要time-wait" class="headerlink" title="6.四次挥手的time_wait发生在哪里？为什么要time_wait?"></a>6.四次挥手的time_wait发生在哪里？为什么要time_wait?</h2><p>发生在四次挥手的最后一次握手，time_wait状态会持续2MSL(2倍最大报文生存周期)，原因是不能确定第四次握手的ack对端一定能接收到，保持这个连接的话如果没接收到，对端还会重新发过来fin，这个连接就起作用了。(其实就是保证最后一次握手的可靠性)</p>
-<h2 id="7-海量两组数组求交集？"><a href="#7-海量两组数组求交集？" class="headerlink" title="7.海量两组数组求交集？"></a>7.海量两组数组求交集？</h2><h2 id="8-redis淘汰策略有哪些？"><a href="#8-redis淘汰策略有哪些？" class="headerlink" title="8.redis淘汰策略有哪些？"></a>8.redis淘汰策略有哪些？</h2><h2 id="9-哪个垃圾回收器使用的标记清除算法？"><a href="#9-哪个垃圾回收器使用的标记清除算法？" class="headerlink" title="9.哪个垃圾回收器使用的标记清除算法？"></a>9.哪个垃圾回收器使用的标记清除算法？</h2>
+          <h1 id="绿盟科技提前批一面难点"><a href="#绿盟科技提前批一面难点" class="headerlink" title="绿盟科技提前批一面难点"></a>绿盟科技提前批一面难点</h1><h2 id="1-堆排序的思路？"><a href="#1-堆排序的思路？" class="headerlink" title="1.堆排序的思路？"></a>1.堆排序的思路？</h2><p>a.将无需序列构建成一个堆，升序选择大顶堆</p>
+<p>b.将堆顶元素与末尾元素交换，将最大元素”沉”到数组末端</p>
+<p>c.重新调整结构，使其满足堆定义，然后继续交换堆顶元素与当前末尾元素，反复执行调整+交换步骤，直到整个序列有序</p>
+<h2 id="2-平衡二叉树的概念，查找时间复杂度"><a href="#2-平衡二叉树的概念，查找时间复杂度" class="headerlink" title="2.平衡二叉树的概念，查找时间复杂度"></a>2.平衡二叉树的概念，查找时间复杂度</h2><p>这个答错了，数据结构好久没复习了，应该是对每个节点：左右子树高度差不超过1.并不是高度必须相等。</p>
+<p>此外，平衡二叉树还必须是二叉搜索树。</p>
+<p>查找时间复杂度：因为是二叉查找树</p>
+<p>O(logn)，n为树高。</p>
+<h2 id="3-项目上线OOM问题如何排查？"><a href="#3-项目上线OOM问题如何排查？" class="headerlink" title="3.项目上线OOM问题如何排查？"></a>3.项目上线OOM问题如何排查？</h2><p>自己的玩具项目暂时还没有这个问题，但是在网上查了一下，大多是用MAT工具排查的。</p>
+<p>貌似是程序抛出OOM之后会自动生成一个OOM信息的文件oom.out,下载MAT对oom.out进行分析，可以看到分析出来的堆栈信息，点击see stacktrace就可以看到出问题的可疑代码段了。</p>
+<h2 id="4-Callable方式，如何防止线程无限期执行或执行时间过长？"><a href="#4-Callable方式，如何防止线程无限期执行或执行时间过长？" class="headerlink" title="4.Callable方式，如何防止线程无限期执行或执行时间过长？"></a>4.Callable方式，如何防止线程无限期执行或执行时间过长？</h2><p>非常有意思的问题：答案是利用FutureTask的get方法构造器设置线程超时时间。注意构造器内传入的是Callable接口并且重写call方法。</p>
+<p>future.get(5000, TimeUnit.MILLISECONDS)</p>
+<p>这段代码的意思是，如果执行超过了5秒，那么就终止线程的执行到下面抛出异常，如果没有达到5秒当然就是获取执行结果了。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">ExecutorService executor = Executors.newSingleThreadExecutor();</span><br><span class="line">FutureTask&lt;String&gt; future =</span><br><span class="line">       <span class="keyword">new</span> FutureTask&lt;String&gt;(<span class="keyword">new</span> Callable&lt;String&gt;() &#123;<span class="comment">//使用Callable接口作为构造参数</span></span><br><span class="line">         <span class="function"><span class="keyword">public</span> String <span class="title">call</span><span class="params">()</span> </span>&#123;</span><br><span class="line">           <span class="comment">//真正的任务在这里执行，这里的返回值类型为String，可以为任意类型</span></span><br><span class="line">       &#125;&#125;);</span><br><span class="line">executor.execute(future);</span><br><span class="line"><span class="comment">//在这里可以做别的任何事情</span></span><br><span class="line"><span class="keyword">try</span> &#123;</span><br><span class="line">    result = future.get(<span class="number">5000</span>, TimeUnit.MILLISECONDS); <span class="comment">//取得结果，同时设置超时执行时间为5秒。同样可以用future.get()，不设置执行超时时间取得结果</span></span><br><span class="line">&#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">    futureTask.cancel(<span class="keyword">true</span>);</span><br><span class="line">&#125; <span class="keyword">catch</span> (ExecutionException e) &#123;</span><br><span class="line">    futureTask.cancel(<span class="keyword">true</span>);</span><br><span class="line">&#125; <span class="keyword">catch</span> (TimeoutException e) &#123;</span><br><span class="line">    futureTask.cancel(<span class="keyword">true</span>);</span><br><span class="line">&#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">    executor.shutdown();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="5-三个线程执行完一个任务，去执行下一个任务，如何实现？"><a href="#5-三个线程执行完一个任务，去执行下一个任务，如何实现？" class="headerlink" title="5.三个线程执行完一个任务，去执行下一个任务，如何实现？"></a>5.三个线程执行完一个任务，去执行下一个任务，如何实现？</h2><p>答：CountdownLatch，CyclicBarrier都可以实现，或者使用计数器来实现。</p>
+<h2 id="6-四次挥手的time-wait发生在哪里？为什么要time-wait"><a href="#6-四次挥手的time-wait发生在哪里？为什么要time-wait" class="headerlink" title="6.四次挥手的time_wait发生在哪里？为什么要time_wait?"></a>6.四次挥手的time_wait发生在哪里？为什么要time_wait?</h2><p>发生在四次挥手的最后一次握手，time_wait状态会持续2MSL(2倍最大报文生存周期)，原因是不能确定第四次握手的ack对端一定能接收到，保持这个连接的话如果没接收到，对端还会重新发过来fin，这个连接就起作用了。(其实就是保证最后一次握手的可靠性)</p>
+<h2 id="7-海量两组数组求交集，保证时间复杂度？"><a href="#7-海量两组数组求交集，保证时间复杂度？" class="headerlink" title="7.海量两组数组求交集，保证时间复杂度？"></a>7.海量两组数组求交集，保证时间复杂度？</h2><p>　考虑一种利用足够大的数组来计数的方法。</p>
+<p>　1. 找到arr1的最大数max，创建一个max+1大小的数组result[max+1]。</p>
+<p>　2.遍历arr1中的数，result数组中对应的数的下标处+1。</p>
+<p>　3. 在result数组中遍历arr2中的值为下标处的值，如果该索引值不为0，则代表该值是两者的交集，保留。</p>
+<h2 id="8-redis淘汰策略有哪些？"><a href="#8-redis淘汰策略有哪些？" class="headerlink" title="8.redis淘汰策略有哪些？"></a>8.redis淘汰策略有哪些？</h2><p>（1）volatile-lru：从已设置过期时间的数据集中挑选最近最少使用的数据淘汰。</p>
+<p>（2）volatile-ttl：从已设置过期时间的数据集中挑选将要过期的数据淘汰。</p>
+<p>（3）volatile-random：从已设置过期时间的数据集中任意选择数据淘汰。</p>
+<p>（4）volatile-lfu：从已设置过期时间的数据集挑选使用频率最低的数据淘汰。</p>
+<p>（5）allkeys-lru：从数据集中挑选最近最少使用的数据淘汰</p>
+<p>（6）allkeys-lfu：从数据集中挑选使用频率最低的数据淘汰。</p>
+<p>（7）allkeys-random：从数据集（server.db[i].dict）中任意选择数据淘汰</p>
+<p>（8） no-enviction（驱逐）：禁止驱逐数据，这也是默认策略。意思是当内存不足以容纳新入数据时，新写入操作就会报错，请求可以继续进行，线上任务也不能持续进行，采用no-enviction策略可以保证数据不被丢失。</p>
+<h2 id="9-内存碎片产生的原因？哪个垃圾回收器使用的标记清除算法？"><a href="#9-内存碎片产生的原因？哪个垃圾回收器使用的标记清除算法？" class="headerlink" title="9.内存碎片产生的原因？哪个垃圾回收器使用的标记清除算法？"></a>9.内存碎片产生的原因？哪个垃圾回收器使用的标记清除算法？</h2><p>CMS对老年代收集是标记清除啊…活活给忘了…</p>
+<p>附上各种垃圾收集器的收集方式：</p>
+<p>Serial 复制算法，新生代</p>
+<p>ParNew 复制算法，新生代</p>
+<p>Parallel Scavenge 复制算法，新生代</p>
+<p>Serial Old 标记整理，老年代</p>
+<p>Parallel Old 标记整理，老年代</p>
+<p>CMS 标记清除，老年代</p>
+<p>G1 标记整理+复制</p>
+
       
     </div>
 
@@ -839,131 +952,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://jiazx.top/2020/08/16/note-4/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Stephen Jia">
-      <meta itemprop="description" content="Try Everything......">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="J Blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2020/08/16/note-4/" class="post-title-link" itemprop="url">用Mockito做业务逻辑的单元测试</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2020-08-16 17:44:24 / 修改时间：17:47:19" itemprop="dateCreated datePublished" datetime="2020-08-16T17:44:24+08:00">2020-08-16</time>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="1-指定Mockito"><a href="#1-指定Mockito" class="headerlink" title="1.指定Mockito"></a>1.指定Mockito</h1><p>1.1在UnitTest类上声明@RunWith(MockitoJUnitRunner.class)</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RunWith(MockitoJUnitRunner.class)</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">XXXTest</span> </span>&#123;</span><br></pre></td></tr></table></figure>
-
-
-
-<p>1.2如果已经使用了类似@RunWith(SpringRunner.class)，采用MockitoRule</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RunWith(YetAnotherRunner.class)</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">TheTest</span> </span>&#123;</span><br><span class="line">    <span class="meta">@Rule</span> <span class="keyword">public</span> MockitoRule mockito = MockitoJUnit.rule();</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>1.3　或者使用API</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">MockitoAnnotations.initMocks(obj)</span><br></pre></td></tr></table></figure>
-
-<h1 id="2-被测试的类用-InjectMocks标记"><a href="#2-被测试的类用-InjectMocks标记" class="headerlink" title="2.被测试的类用@InjectMocks标记"></a>2.被测试的类用@InjectMocks标记</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">@InjectMocks LocalPub localPub;</span><br></pre></td></tr></table></figure>
-
-
-
-<h1 id="3-被测试类的依赖注入用-Mock标记"><a href="#3-被测试类的依赖注入用-Mock标记" class="headerlink" title="3.被测试类的依赖注入用@Mock标记"></a>3.被测试类的依赖注入用@Mock标记</h1><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Mock</span> Foo foo;</span><br><span class="line"><span class="meta">@Mock</span> Bar bar;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-
-
-<p>结合上述２和３，被测试类的代码大致如下所示</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">class LocalPub&#123;</span><br><span class="line">     </span><br><span class="line">  @Autowired</span><br><span class="line">  Foo foo;</span><br><span class="line">   </span><br><span class="line">  @Autowired</span><br><span class="line">  Bar bar;</span><br><span class="line">     </span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<h1 id="4-测试过程和Mock过程"><a href="#4-测试过程和Mock过程" class="headerlink" title="4.测试过程和Mock过程"></a>4.测试过程和Mock过程</h1><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">when(foo.foo()).thenReturn(&quot;ok&quot;);</span><br><span class="line">when(bar.bar()).thenReturn(&quot;fail&quot;);</span><br><span class="line"> </span><br><span class="line">String ans&#x3D;localPub.x();</span><br><span class="line"> </span><br><span class="line">assertEquals(&quot;x&quot;,ans);</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>结合上述的单元测试片段，大概的被测试代码如下</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> String <span class="title">x</span><span class="params">()</span></span>&#123;</span><br><span class="line">  String a=  foo.foo();</span><br><span class="line">  String b=bar.bar();</span><br><span class="line">  <span class="keyword">return</span> <span class="string">&quot;x&quot;</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<h1 id="5-测试方法中包含静态方法"><a href="#5-测试方法中包含静态方法" class="headerlink" title="5.测试方法中包含静态方法"></a>5.测试方法中包含静态方法</h1><p>看上去一切都完美，但是如果有静态方法访问到外部资源，会导致单元测试超时或失败<br>–用PowerMockit来Mock静态方法来解决这类问题<br>5.1用@RunWith(PowerMockRunner.class)代替@RunWith(MockitoJUnitRunner.class)<br>5.2添加类Annotation　- @PrepareForTest(VariableConfig.class)<br>5.3在运行被测试方法之前mock静态方法</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RunWith(PowerMockRunner.class)</span></span><br><span class="line"><span class="meta">@PrepareForTest(VariableConfig.class)</span>  <span class="comment">//VariableConfig是静态方法类</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">XxxTest</span> </span>&#123;</span><br><span class="line"> </span><br><span class="line">    <span class="meta">@Test</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">x</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="comment">//mock static method</span></span><br><span class="line">        PowerMockito.mockStatic(VariableConfig.class);</span><br><span class="line">        Mockito.when(VariableConfig.getSystemAdminId()).thenReturn(<span class="string">&quot;system&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<h1 id="6-Mock返回值为void的方法"><a href="#6-Mock返回值为void的方法" class="headerlink" title="6.Mock返回值为void的方法"></a>6.Mock返回值为void的方法</h1><p>当单元测试的方法内部有void方法需要特殊处理(跳过或计算执行次数等)可以使用如下几种方法。</p>
-<p>case1：方法需要跳过，使用</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">doNothing().when(obj).method(params)</span><br></pre></td></tr></table></figure>
-
-
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">createKubernetesJob</span><span class="params">(Map&lt;String, Object&gt; params, Integer jobId, String jobName, String jobNamespace)</span> </span>&#123;</span><br><span class="line">        <span class="comment">//语句前后部分逻辑已略过, jobManager调用的方法会进到dao层内更新DB内数据，在sonar流水线扫描时，test case无法连接数据库，所以这个方法调用要跳过</span></span><br><span class="line">        jobManager.updateHelmDeployJobStatus(jobId, DeployStatusEnum.FAIL.getValue(), ErrorMessageConstants.B_HELM_01_000, <span class="string">&quot;create deploy job failed&quot;</span>);</span><br><span class="line"> </span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>jobManager.updateHelmDeployJobStatus方法会进到dao层内更新DB内数据，在sonar流水线扫描时，test case因为无法连接数据库卡住，所以这个方法调用要跳过<br>跳过方法：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Test</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">createKubernetesJob</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    doNothing().when(jobManager).updateHelmDeployJobStatus(Mockito.anyInt(), Mockito.anyInt(), Mockito.anyString(), Mockito.anyString());</span><br><span class="line">    <span class="comment">//......</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<p>这样既可跳过updateHelmDeployJobStatus方法的调用，单元测试时不会影响其他的代码逻辑。</p>
-<p>case2：方法无需跳过</p>
-<p>void方法无需跳过并且可以正常调用时，可以考虑不mock直接运行此方法。也可以使用verify验证void方法运行的次数。</p>
-<p>假如有一个UserService的updateUser的方法调用了UserDao持久层的 void update方法，可以在单测中使用如下语句验证语句执行次数为1：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">verify(userDao, times(<span class="number">1</span>)).update(user);</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-
-
-<p>case3：其他特殊场景<br>仍以case2中为例：</p>
-<p>当void方法抛出某种异常时希望跳过：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">doNothing().doThrow(<span class="keyword">new</span> DataAccessException()).when(userDao).save(user)</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-
-
-<p>考虑 doCallRealMethod() 或  doAnser()：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">doCallRealMethod().when(mockObject).voidMethod();<span class="comment">//去调用其他方法</span></span><br><span class="line">doAnswer(answer).when(mockObject).voidMethod();</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-
-
-
-<h1 id="7-一份完整的测试例子："><a href="#7-一份完整的测试例子：" class="headerlink" title="7.一份完整的测试例子："></a>7.一份完整的测试例子：</h1><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">//测试目标</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> LoginResponse <span class="title">login</span><span class="params">(String name, String password, <span class="keyword">int</span> expires, String clientIp)</span> </span>&#123;</span><br><span class="line">        User user = accountPasswordValidator.validate(name, password, clientIp);</span><br><span class="line">        SessionDTO session = sessionService.create(user, expires);</span><br><span class="line"> </span><br><span class="line">        List&lt;UserOrganizationInfo&gt; userOrganizations = userOrganizationInfoRepository.findByUserId(user.getId());</span><br><span class="line">        List&lt;String&gt; organizationIds = userOrganizations.stream()</span><br><span class="line">                .map(UserOrganizationInfo::getOrganizationId)</span><br><span class="line">                .collect(Collectors.toList());</span><br><span class="line">        List&lt;Organization&gt; organizations = organizationRepository.findAllById(organizationIds);</span><br><span class="line"> </span><br><span class="line">        LoginResponse response = <span class="keyword">new</span> LoginResponse();</span><br><span class="line">        response.sessionId = session.id;</span><br><span class="line">        response.user = DTOConverterUtil.entityToDTO(user, UserDTO.class);</span><br><span class="line">        response.organizations = DTOConverterUtil.entityListToDTOList(organizations, BaseDTO.class);</span><br><span class="line"> </span><br><span class="line">        <span class="keyword">if</span> (user != <span class="keyword">null</span> &amp;&amp; user.getId().equals(VariableConfig.getSystemAdminId())) &#123;</span><br><span class="line">            response.isSuperAdmin = <span class="keyword">true</span>;</span><br><span class="line">        &#125;</span><br><span class="line"> </span><br><span class="line">        <span class="keyword">return</span> response;</span><br><span class="line">    &#125;</span><br><span class="line">     </span><br><span class="line"><span class="comment">//测试用例</span></span><br><span class="line"> </span><br><span class="line"><span class="meta">@RunWith(PowerMockRunner.class)</span></span><br><span class="line"><span class="meta">@PrepareForTest(VariableConfig.class)</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AuthenticationServiceImplTest</span> </span>&#123;</span><br><span class="line"> </span><br><span class="line">    <span class="meta">@InjectMocks</span></span><br><span class="line">    <span class="keyword">private</span> AuthenticationServiceImpl authenticationService;</span><br><span class="line"> </span><br><span class="line">    <span class="meta">@Mock</span></span><br><span class="line">    <span class="keyword">private</span> OrganizationRepository organizationRepositoryMock;</span><br><span class="line"> </span><br><span class="line">    <span class="meta">@Test</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">login</span><span class="params">()</span> </span>&#123;</span><br><span class="line"> </span><br><span class="line">        String name = <span class="string">&quot;user&quot;</span>;</span><br><span class="line">        String password = <span class="string">&quot;passwd&quot;</span>;</span><br><span class="line">        String clientIp = <span class="string">&quot;192.168.0.1&quot;</span>;</span><br><span class="line">        <span class="keyword">int</span> expires = <span class="number">1000</span>;</span><br><span class="line">         </span><br><span class="line">        PowerMockito.mockStatic(VariableConfig.class);</span><br><span class="line">        Mockito.when(VariableConfig.getSystemAdminId()).thenReturn(<span class="string">&quot;system&quot;</span>);</span><br><span class="line"> </span><br><span class="line">        User user = DummyUtils.dummyCreate(User.class);</span><br><span class="line">        when(accountPasswordValidatorMock.validate(name, password, clientIp)).thenReturn(user);</span><br><span class="line"> </span><br><span class="line">        SessionDTO sessionDTO = DummyUtils.dummyCreate(SessionDTO.class);</span><br><span class="line">        BaseDTO&lt;String&gt; userDTO = DummyUtils.dummyCreate(BaseDTO.class);</span><br><span class="line">        userDTO.id = DummyUtils.randomStr(<span class="number">5</span>);</span><br><span class="line">        sessionDTO.user = userDTO;</span><br><span class="line">        BaseDTO&lt;String&gt; orgDTO = DummyUtils.dummyCreate(BaseDTO.class);</span><br><span class="line">        orgDTO.id = DummyUtils.randomStr(<span class="number">5</span>);</span><br><span class="line">        sessionDTO.workingOrganization = orgDTO;</span><br><span class="line">        when(sessionServiceMock.create(user, expires)).thenReturn(sessionDTO);</span><br><span class="line"> </span><br><span class="line">        List&lt;UserOrganizationInfo&gt; userOrganizationInfoList = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">        UserOrganizationInfo uoi1 = DummyUtils.dummyCreate(UserOrganizationInfo.class);</span><br><span class="line">        uoi1.setUserId(user.getId());</span><br><span class="line">        userOrganizationInfoList.add(uoi1);</span><br><span class="line">        UserOrganizationInfo uoi2 = DummyUtils.dummyCreate(UserOrganizationInfo.class);</span><br><span class="line">        uoi2.setUserId(user.getId());</span><br><span class="line">        userOrganizationInfoList.add(uoi2);</span><br><span class="line">        when(userOrganizationInfoRepositoryMock.findByUserId(user.getId())).thenReturn(userOrganizationInfoList);</span><br><span class="line"> </span><br><span class="line">        List&lt;Organization&gt; organizations = <span class="keyword">new</span> ArrayList&lt;&gt;();</span><br><span class="line">        Organization o1 = DummyUtils.dummyCreate(Organization.class);</span><br><span class="line">        o1.setId(uoi1.getOrganizationId());</span><br><span class="line">        organizations.add(o1);</span><br><span class="line">        Organization o2 = DummyUtils.dummyCreate(Organization.class);</span><br><span class="line">        o2.setId(uoi2.getOrganizationId());</span><br><span class="line">        organizations.add(o2);</span><br><span class="line">        when(organizationRepositoryMock.findAllById(Mockito.any(Iterable.class))).thenReturn(organizations);</span><br><span class="line"> </span><br><span class="line">        LoginResponse loginResponse = authenticationService.login(name, password, expires, clientIp);</span><br><span class="line"> </span><br><span class="line">        assertEquals(sessionDTO.id, loginResponse.sessionId);</span><br><span class="line">        assertNotNull(loginResponse.user);</span><br><span class="line">        assertNotNull(loginResponse.organizations);</span><br><span class="line">        assertEquals(<span class="number">2</span>, loginResponse.organizations.size());</span><br><span class="line"> </span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-
-
-
-<p>参考资料</p>
-<p><a target="_blank" rel="noopener" href="https://static.javadoc.io/org.mockito/mockito-core/2.27.0/org/mockito/Mockito.html">https://static.javadoc.io/org.mockito/mockito-core/2.27.0/org/mockito/Mockito.html</a><br><a target="_blank" rel="noopener" href="https://www.springboottutorial.com/spring-boot-unit-testing-and-mocking-with-mockito-and-junit">https://www.springboottutorial.com/spring-boot-unit-testing-and-mocking-with-mockito-and-junit</a><br><a target="_blank" rel="noopener" href="https://github.com/powermock/powermock/wiki/Mockito#mockito-mock-maker-inline">https://github.com/powermock/powermock/wiki/Mockito#mockito-mock-maker-inline</a></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -1033,7 +1021,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">42</span>
+          <span class="site-state-item-count">43</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
